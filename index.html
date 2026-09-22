@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GFS 1-Year Live Paper Trading Terminal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090d16;
+            --surface: #111827;
+            --surface-hover: #1e293b;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-active: rgba(59, 130, 246, 0.5);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --green: #10b981;
+            --green-bg: rgba(16, 185, 129, 0.12);
+            --red: #f43f5e;
+            --red-bg: rgba(244, 63, 94, 0.12);
+            --blue: #3b82f6;
+            --gold: #f59e0b;
+            --gold-bg: rgba(245, 158, 11, 0.12);
+            --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding: 20px;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.5; }
+            100% { transform: scale(0.95); opacity: 1; }
+        }
+
+        .time-badge {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: var(--surface);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        /* 4 Strategy Scorecards */
+        .portfolios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .port-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .port-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .port-card.selected {
+            border-color: var(--blue);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+        }
+        .port-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
+        }
+        .port-card.india-liquid::before { background: var(--gold); }
+        .port-card.india-broad::before { background: #f97316; }
+        .port-card.usa-liquid::before { background: #06b6d4; }
+        .port-card.usa-broad::before { background: var(--blue); }
+
+        .port-badge {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .equity-val {
+            font-size: 26px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            margin-bottom: 6px;
+        }
+        .pnl-pill {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+        .gain { color: var(--green); background: var(--green-bg); }
+        .loss { color: var(--red); background: var(--red-bg); }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            padding-top: 8px;
+        }
+        .stat-line strong {
+            color: var(--text-main);
+            font-family: var(--font-mono);
+        }
+
+        /* Detail Section */
+        .detail-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 960px) {
+            .detail-container { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .panel-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            max-height: 380px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-muted);
+            text-align: left;
+            padding: 10px 12px;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        tr:hover { background: rgba(255, 255, 255, 0.02); }
+        .mono { font-family: var(--font-mono); }
+
+        .gold-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.03) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+        .gold-box-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .gold-val {
+            font-size: 22px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            color: #fff;
+        }
+        .gold-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .refresh-btn {
+            background: var(--surface-hover);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .refresh-btn:hover {
+            background: var(--blue);
+            border-color: var(--blue);
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-title">
+        <h1>📊 GFS 1-Year Live Paper Trading Terminal</h1>
+        <p>Real-Time Autonomous Forward Testing • India & USA • 100% Gold Cash Parking • Zero Risk</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <span class="status-pill"><span class="pulse-dot"></span> Cloud Bot Active (GitHub Actions)</span>
+        <span class="time-badge" id="clockIST">IST: --:--:--</span>
+        <button class="refresh-btn" onclick="fetchAllData()">🔄 Refresh</button>
+    </div>
+</div>
+
+<!-- 4 Portfolio Cards -->
+<div class="portfolios-grid">
+    <div class="port-card india-liquid selected" id="card-india_liquid" onclick="selectPortfolio('india_liquid')">
+        <div class="port-badge"><span>🇮🇳 INDIA LIQUID</span><span>NIFTY 500</span></div>
+        <div class="equity-val" id="val-india_liquid">₹--</div>
+        <span class="pnl-pill gain" id="pnl-india_liquid">+0.00%</span>
+        <div class="stat-line"><span>Cash In Gold (GOLDBEES)</span><strong id="gold-india_liquid">₹--</strong></div>
+        <div class="stat-line"><span>Active Equity Positions</span><strong id="pos-india_liquid">0 / 10</strong></div>
+    </div>
+
+    <div class="port-card india-broad" id="card-india_broad" onclick="selectPortfolio('india_broad')">
+        <div class="port-badge"><span>🇮🇳 INDIA BROAD</span><span>> ₹100CR MCAP</span></div>
+        <div class="equity-val" id="val-india_broad">₹--</div>
+        <span class="pnl-pill gain" id="pnl-india_broad">+0.00%</span>
+        <div class="stat-line"><span>Cash In Gold (GOLDBEES)</span><strong id="gold-india_broad">₹--</strong></div>
+        <div class="stat-line"><span>Active Equity Positions</span><strong id="pos-india_broad">0 / 10</strong></div>
+    </div>
+
+    <div class="port-card usa-liquid" id="card-usa_liquid" onclick="selectPortfolio('usa_liquid')">
+        <div class="port-badge"><span>🇺🇸 USA LIQUID</span><span>S&P 500</span></div>
+        <div class="equity-val" id="val-usa_liquid">$--</div>
+        <span class="pnl-pill gain" id="pnl-usa_liquid">+0.00%</span>
+        <div class="stat-line"><span>Cash In Gold (GLD)</span><strong id="gold-usa_liquid">$--</strong></div>
+        <div class="stat-line"><span>Active Equity Positions</span><strong id="pos-usa_liquid">0 / 10</strong></div>
+    </div>
+
+    <div class="port-card usa-broad" id="card-usa_broad" onclick="selectPortfolio('usa_broad')">
+        <div class="port-badge"><span>🇺🇸 USA BROAD</span><span>INDMONEY</span></div>
+        <div class="equity-val" id="val-usa_broad">$--</div>
+        <span class="pnl-pill gain" id="pnl-usa_broad">+0.00%</span>
+        <div class="stat-line"><span>Cash In Gold (GLD)</span><strong id="gold-usa_broad">$--</strong></div>
+        <div class="stat-line"><span>Active Equity Positions</span><strong id="pos-usa_broad">0 / 10</strong></div>
+    </div>
+</div>
+
+<!-- Detail & Holdings Section -->
+<div class="detail-container">
+    <div class="panel">
+        <div class="panel-header">
+            <h2 id="activePortTitle">Active Holdings - INDIA LIQUID</h2>
+            <span style="font-size: 12px; color: var(--text-muted);" id="lastUpdatedDate">Updated: Today</span>
+        </div>
+        <div class="table-wrap">
+            <table id="holdingsTable">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Entry Date</th>
+                        <th>Entry Price</th>
+                        <th>Last Price</th>
+                        <th>Hold</th>
+                        <th>Unrealized Return</th>
+                        <th>Unrealized PnL</th>
+                    </tr>
+                </thead>
+                <tbody id="holdingsBody">
+                    <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">100% Capital safely parked in Gold ETF awaiting GFS breakout signals.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h2>Liquidity & Capital Shield</h2>
+        </div>
+        <div class="gold-box">
+            <div class="gold-box-title">🟡 Gold Cash Parking Proxy</div>
+            <div class="gold-val" id="goldBoxVal">₹--</div>
+            <div class="gold-sub" id="goldBoxSub">Units: -- @ ₹--</div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); border-radius: 12px; padding: 16px; border: 1px solid var(--border);">
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Portfolio Rules</div>
+            <ul style="font-size: 12px; line-height: 1.8; color: #cbd5e1; padding-left: 18px;" id="rulesList">
+                <li>Initial Capital: ₹1,00,000</li>
+                <li>Slots: 10 equal positions (10% per slot)</li>
+                <li>Regime: 100% Bull / 70% Neutral / 30% Bear</li>
+                <li>Exit: Month-End Close < Monthly EMA9</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Closed Trades Log -->
+<div class="panel" style="margin-bottom: 24px;">
+    <div class="panel-header">
+        <h2>Executed Trade History</h2>
+        <span style="font-size: 12px; color: var(--text-muted);" id="tradeCount">0 closed trades</span>
+    </div>
+    <div class="table-wrap">
+        <table id="tradesTable">
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Entry Date</th>
+                    <th>Exit Date</th>
+                    <th>Holding</th>
+                    <th>Entry</th>
+                    <th>Exit</th>
+                    <th>Return %</th>
+                    <th>Realized PnL</th>
+                    <th>Exit Reason</th>
+                </tr>
+            </thead>
+            <tbody id="tradesBody">
+                <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 20px;">No trades closed yet (forward testing launched today).</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+const portfolios = {
+    india_liquid: { file: "reports/paper_trading/portfolio_state_india_liquid.json", curr: "₹", data: null },
+    india_broad: { file: "reports/paper_trading/portfolio_state_india_broad.json", curr: "₹", data: null },
+    usa_liquid: { file: "reports/paper_trading/portfolio_state_usa_liquid.json", curr: "$", data: null },
+    usa_broad: { file: "reports/paper_trading/portfolio_state_usa_broad.json", curr: "$", data: null }
+};
+
+let activeKey = "india_liquid";
+
+function updateClock() {
+    const now = new Date();
+    const ist = new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(now);
+    document.getElementById("clockIST").innerText = "IST: " + ist;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+async function fetchPortfolio(key) {
+    const info = portfolios[key];
+    const rawGithubUrl = `https://raw.githubusercontent.com/iamsjeevan/gfs-live-paper-trader/main/${info.file}`;
+
+    try {
+        // Try local static path first (same domain), fallback to Raw GitHub
+        let res = await fetch(info.file + "?t=" + Date.now());
+        if (!res.ok) {
+            res = await fetch(rawGithubUrl + "?t=" + Date.now());
+        }
+        if (res.ok) {
+            info.data = await res.json();
+            renderCard(key, info.data, info.curr);
+            if (key === activeKey) {
+                renderActivePortfolio();
+            }
+        }
+    } catch (e) {
+        console.warn("Could not load " + key, e);
+    }
+}
+
+function fetchAllData() {
+    Object.keys(portfolios).forEach(k => fetchPortfolio(k));
+}
+
+function renderCard(key, data, curr) {
+    const eq = data.total_equity || data.initial_capital;
+    const init = data.initial_capital;
+    const pnl = eq - init;
+    const pnlPct = (pnl / init) * 100;
+
+    document.getElementById("val-" + key).innerText = curr + Math.round(eq).toLocaleString();
+    const pnlEl = document.getElementById("pnl-" + key);
+    pnlEl.innerText = (pnlPct >= 0 ? "+" : "") + pnlPct.toFixed(2) + "%";
+    pnlEl.className = "pnl-pill " + (pnlPct >= 0 ? "gain" : "loss");
+
+    document.getElementById("gold-" + key).innerText = curr + Math.round(data.proxy_val || eq).toLocaleString();
+    document.getElementById("pos-" + key).innerText = Object.keys(data.positions || {}).length + " / 10";
+}
+
+function selectPortfolio(key) {
+    activeKey = key;
+    document.querySelectorAll(".port-card").forEach(c => c.classList.remove("selected"));
+    document.getElementById("card-" + key).classList.add("selected");
+    renderActivePortfolio();
+}
+
+function renderActivePortfolio() {
+    const info = portfolios[activeKey];
+    const data = info.data;
+    if (!data) return;
+
+    const curr = info.curr;
+    document.getElementById("activePortTitle").innerText = "Active Holdings - " + (data.label || activeKey.toUpperCase());
+    document.getElementById("lastUpdatedDate").innerText = "Last Updated: " + (data.last_updated || "Today");
+
+    // Render Holdings
+    const positions = data.positions || {};
+    const posKeys = Object.keys(positions);
+    const tbody = document.getElementById("holdingsBody");
+
+    if (posKeys.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">100% Capital (${curr}${Math.round(data.total_equity).toLocaleString()}) safely parked in ${data.proxy_symbol} awaiting GFS breakout signals.</td></tr>`;
+    } else {
+        let html = "";
+        posKeys.forEach(sym => {
+            const p = positions[sym];
+            const ret = p.unrealized_return_pct || 0;
+            const pnl = p.unrealized_pnl || 0;
+            const retClass = ret >= 0 ? "gain" : "loss";
+            html += `<tr>
+                <td><strong>${p.symbol}</strong></td>
+                <td>${p.entry_date}</td>
+                <td class="mono">${curr}${p.sim_entry_price.toFixed(2)}</td>
+                <td class="mono">${curr}${p.last_price.toFixed(2)}</td>
+                <td class="mono">${p.holding_days}d</td>
+                <td class="mono"><span class="pnl-pill ${retClass}">${ret >= 0 ? "+" : ""}${ret.toFixed(2)}%</span></td>
+                <td class="mono ${retClass}">${ret >= 0 ? "+" : ""}${curr}${pnl.toFixed(2)}</td>
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+    }
+
+    // Render Gold Info
+    document.getElementById("goldBoxVal").innerText = curr + Math.round(data.proxy_val || 0).toLocaleString();
+    document.getElementById("goldBoxSub").innerText = `${data.proxy_symbol} • ${(data.proxy_units || 0).toFixed(2)} Units @ ${curr}${(data.proxy_last_price || 0).toFixed(2)}`;
+
+    // Rules
+    const rulesEl = document.getElementById("rulesList");
+    if (activeKey.includes("india")) {
+        rulesEl.innerHTML = `
+            <li>Initial Capital: ₹1,00,000</li>
+            <li>Slots: 10 equal positions (10% per slot)</li>
+            <li>Cash Proxy: GOLDBEES.NS (Gold ETF)</li>
+            <li>Regime Schedule: 100% Bull / 70% Neutral / 30% Bear</li>
+            <li>Exit Rule: Month-End Close &lt; Monthly EMA9</li>
+        `;
+    } else {
+        rulesEl.innerHTML = `
+            <li>Initial Capital: $10,000</li>
+            <li>Slots: 10 equal positions (10% per slot)</li>
+            <li>Cash Proxy: GLD (SPDR Gold Shares)</li>
+            <li>Regime Schedule: 100% Bull / 70% Neutral / 30% Bear</li>
+            <li>Exit Rule: 60-Day Eviction (&lt; +3%) + Monthly EMA13</li>
+        `;
+    }
+
+    // Render Closed Trades
+    const closed = data.closed_trades || [];
+    document.getElementById("tradeCount").innerText = `${closed.length} closed trades`;
+    const tradesBody = document.getElementById("tradesBody");
+    if (closed.length === 0) {
+        tradesBody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 20px;">No trades closed yet in this portfolio.</td></tr>`;
+    } else {
+        let tHtml = "";
+        closed.forEach(t => {
+            const ret = t.return_pct || 0;
+            const pnl = t.pnl || 0;
+            const retClass = ret >= 0 ? "gain" : "loss";
+            tHtml += `<tr>
+                <td><strong>${t.symbol}</strong></td>
+                <td>${t.entry_date}</td>
+                <td>${t.exit_date}</td>
+                <td class="mono">${t.holding_days}d</td>
+                <td class="mono">${curr}${t.entry_price.toFixed(2)}</td>
+                <td class="mono">${curr}${t.exit_price.toFixed(2)}</td>
+                <td class="mono"><span class="pnl-pill ${retClass}">${ret >= 0 ? "+" : ""}${ret.toFixed(2)}%</span></td>
+                <td class="mono ${retClass}">${ret >= 0 ? "+" : ""}${curr}${pnl.toFixed(2)}</td>
+                <td><small>${t.exit_reason}</small></td>
+            </tr>`;
+        });
+        tradesBody.innerHTML = tHtml;
+    }
+}
+
+fetchAllData();
+// Poll every 30 seconds for live updates
+setInterval(fetchAllData, 30000);
+</script>
+
+</body>
+</html>
