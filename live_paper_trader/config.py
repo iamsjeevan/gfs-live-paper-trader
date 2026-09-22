@@ -70,7 +70,7 @@ INDIA_DEAD_MONEY_DAYS = 0
 # ==========================================
 USA_INITIAL_CAPITAL = float(os.getenv("USA_CAPITAL", "10000.0")) # $10,000
 USA_SLOTS = 10
-USA_CASH_PROXY = "BIL"      # SPDR Bloomberg 1-3 Month T-Bill ETF
+USA_CASH_PROXY = "GLD"      # SPDR Gold Shares ETF (Gold Proxy)
 USA_INDEX_TICKER = "SPY"    # S&P 500
 
 # Frictions
