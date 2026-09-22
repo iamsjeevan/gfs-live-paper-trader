@@ -1,0 +1,37 @@
+{
+  "OOS_Split1": {
+    "Train_Period": "2018-2022",
+    "Train_Best_Params": "Mom 126, Vol 90",
+    "Train_Sharpe": 2.00143777066263,
+    "Test_Period": "2023-2026",
+    "Test_CAGR": 41.05841156664243,
+    "Test_MaxDD": -18.834139735913435,
+    "Test_Sharpe": 1.7631887388810583
+  },
+  "OOS_Split2": {
+    "Train_Period": "2018-2020",
+    "Train_Best_Params": "Mom 126, Vol 60",
+    "Train_Sharpe": 1.418238442822563,
+    "Test_Period": "2021-2023",
+    "Test_CAGR": 68.56686218891372,
+    "Test_MaxDD": -18.671984819907074,
+    "Test_Sharpe": 2.5978117956199354
+  },
+  "Mom_Comparison": {
+    "3M_Trades": 17062,
+    "3M_CAGR": 37.81615034339785,
+    "6M_Trades": 15913,
+    "6M_CAGR": 40.88728982690812
+  },
+  "2022_Drawdown": {
+    "Worst_Day": "2022-05-12",
+    "Max_DD": -28.78501738605565,
+    "Sectors_At_Bottom": {
+      "Power": 1,
+      "Chemicals": 1,
+      "Hospitality": 1,
+      "Agri": 1,
+      "Diversified": 1
+    }
+  }
+}

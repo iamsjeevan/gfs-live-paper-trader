@@ -1,0 +1,14 @@
+Model Configuration,Capacity,Winners >25%,Winners >50%,Winners >100%,Winners >200%,BLISSGVS Captured,Capture Rate (>100%)
+Unrestricted Baseline Universe,4631,262,80,19,3,True,100.0
+Model A: Equal Weight,10,76,26,8,1,True,42.10526315789473
+Model A: Equal Weight,15,97,29,9,1,True,47.368421052631575
+Model A: Equal Weight,20,130,36,11,1,True,57.89473684210527
+Model B1: Linear Rank,10,76,24,7,1,True,36.84210526315789
+Model B1: Linear Rank,15,100,30,10,1,True,52.63157894736842
+Model B1: Linear Rank,20,130,36,11,1,True,57.89473684210527
+Model C: Relative Volume,10,81,26,8,1,True,42.10526315789473
+Model C: Relative Volume,15,112,34,10,2,True,52.63157894736842
+Model C: Relative Volume,20,131,38,12,2,True,63.1578947368421
+Model D: Hybrid Tech+Fund,10,75,23,7,1,True,36.84210526315789
+Model D: Hybrid Tech+Fund,15,103,27,9,2,True,47.368421052631575
+Model D: Hybrid Tech+Fund,20,131,36,14,3,True,73.68421052631578

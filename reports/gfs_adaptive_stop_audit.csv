@@ -1,0 +1,2 @@
+Model,Total_Trades,Trailing_EMA21_Exits,Trailing_Pct,Intraday_Stop_Exits,Intraday_Stop_Pct,GapDown_Stop_Exits,GapDown_Stop_Pct,Mean_GapDown_Loss_Pct,Worst_GapDown_Loss_Pct
+Model 4 Full Adaptive,1313,641,48.819497334348824,608,46.30616907844631,60,4.56968773800457,-8.257320295591647,-71.95626830728081

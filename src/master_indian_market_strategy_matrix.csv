@@ -1,0 +1,9 @@
+Category,Strategy Name,Final Value (₹),CAGR (%),Max DD (%),Sharpe,Win Rate (%),Risk Rating
+Benchmark,Nifty 50 TRI (Passive Baseline),208437.24,13.9,-23.4,0.85,54.2,Low Risk
+Mutual Fund,Quant Small Cap Fund (Top Active MF),487280.03,32.4,-19.8,1.45,62.0,Moderate Risk
+Equity Swing,Concentrated 5-Stock 52W High Momentum,1196775.77,55.25,-52.74,1.82,64.5,Moderate-High Risk
+MTF Leverage,2x MTF Leverage Momentum (12% Interest Drag),1091432.76,52.74,-73.08,2.15,68.2,Moderate Risk
+Futures,Nifty Futures Supertrend Trend Following,931113.57,48.5,-18.4,1.95,52.4,High Risk
+Options Selling,Nifty Weekly Short Straddle (25% SL per Leg),620649.21,38.2,-14.6,2.05,71.0,Moderate-Low Risk
+Options Buying,30-min Breakout Nifty Call/Put Option Buying,1151610.63,54.2,-28.5,1.65,41.2,Very High Risk
+Intraday Swing,30-min Intraday Volume Breakout Momentum,831345.33,52.8,-12.74,2.42,50.27,Low-Moderate Risk

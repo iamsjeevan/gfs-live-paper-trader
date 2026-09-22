@@ -1,0 +1,86 @@
+{
+    "last_updated": "2026-08-29 00:17:49",
+    "top_10_portfolio": [
+        {
+            "ticker": "CUPID",
+            "current_price": 276.65,
+            "sma_50": 233.19,
+            "sma_200": 130.97,
+            "momentum_score": 35.74,
+            "buffer_to_50sma": 15.71
+        },
+        {
+            "ticker": "TFCILTD",
+            "current_price": 141.84,
+            "sma_50": 98.61,
+            "sma_200": 76.43,
+            "momentum_score": 33.53,
+            "buffer_to_50sma": 30.48
+        },
+        {
+            "ticker": "UNIVASTU",
+            "current_price": 156.88,
+            "sma_50": 125.37,
+            "sma_200": 82.65,
+            "momentum_score": 31.6,
+            "buffer_to_50sma": 20.08
+        },
+        {
+            "ticker": "QUESS",
+            "current_price": 356.95,
+            "sma_50": 304.17,
+            "sma_200": 226.13,
+            "momentum_score": 28.75,
+            "buffer_to_50sma": 14.79
+        },
+        {
+            "ticker": "INDSWFTLAB",
+            "current_price": 358.04,
+            "sma_50": 251.22,
+            "sma_200": 156.97,
+            "momentum_score": 27.66,
+            "buffer_to_50sma": 29.83
+        },
+        {
+            "ticker": "SUNDRMFAST",
+            "current_price": 1216.2,
+            "sma_50": 1034.04,
+            "sma_200": 917.73,
+            "momentum_score": 27.6,
+            "buffer_to_50sma": 14.98
+        },
+        {
+            "ticker": "MACPOWER",
+            "current_price": 1868.8,
+            "sma_50": 1508.9,
+            "sma_200": 1114.6,
+            "momentum_score": 25.43,
+            "buffer_to_50sma": 19.26
+        },
+        {
+            "ticker": "WELCORP",
+            "current_price": 2405.8,
+            "sma_50": 1742.37,
+            "sma_200": 1160.72,
+            "momentum_score": 24.4,
+            "buffer_to_50sma": 27.58
+        },
+        {
+            "ticker": "AVADHSUGAR",
+            "current_price": 804.55,
+            "sma_50": 582.31,
+            "sma_200": 446.48,
+            "momentum_score": 23.84,
+            "buffer_to_50sma": 27.62
+        },
+        {
+            "ticker": "SHILPAMED",
+            "current_price": 901.85,
+            "sma_50": 682.84,
+            "sma_200": 452.5,
+            "momentum_score": 23.83,
+            "buffer_to_50sma": 24.28
+        }
+    ],
+    "market_status": "OPEN"
+}

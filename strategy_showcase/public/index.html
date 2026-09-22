@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intraday 60-Min Hourly Trade Inspector & Strategy Showcase</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- TradingView Lightweight Charts -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-slate-900/95 border-b border-slate-800 px-6 py-4 sticky top-0 z-50 flex flex-col lg:flex-row items-center justify-between gap-4 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-emerald-500/20">
+        ⏱️
+      </div>
+      <div>
+        <h1 class="text-lg font-black text-white tracking-tight flex items-center gap-2">
+          Intraday 60-Minute Hourly Trade Inspector
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">INTRADAY CANDLES (09:15 - 15:15)</span>
+        </h1>
+        <p class="text-xs text-slate-400">Inspecting Exact Intraday Buying (09:15 AM) and Selling (3:15 PM / Stop Loss Exit)</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex items-center bg-slate-950 p-1.5 rounded-xl border border-slate-800 text-xs font-semibold gap-1">
+      <button id="viewTabCalendar" onclick="switchView('CALENDAR')" class="px-4 py-2 rounded-lg bg-emerald-500 text-slate-950 font-extrabold shadow-md transition-all">
+        ⏱️ Intraday Hourly Inspector
+      </button>
+      <button id="viewTab52W" onclick="switchView('52W_HIGH')" class="px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all">
+        📈 52W High Examples
+      </button>
+      <button id="viewTabIntra" onclick="switchView('INTRADAY_VOL')" class="px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all">
+        ⚡ Intraday Breakdown
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+
+    <!-- CALENDAR INSPECTOR VIEW -->
+    <div id="calendarViewSection" class="space-y-6">
+      <!-- Calendar Controls & Quick Jump Buttons -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+        <!-- Date Navigation -->
+        <div class="flex items-center gap-2">
+          <button onclick="navigateDay(-1)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition-all flex items-center gap-1">
+            ◄ Previous Day
+          </button>
+          <input type="date" id="calendarDatePicker" onchange="onDateSelect(this.value)" class="bg-slate-950 border border-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl focus:outline-none focus:border-emerald-500" />
+          <button onclick="navigateDay(1)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition-all flex items-center gap-1">
+            Next Day ►
+          </button>
+        </div>
+
+        <!-- Quick Jump Buttons -->
+        <div class="flex items-center gap-2">
+          <button onclick="jumpToMonth('best')" class="px-3.5 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5">
+            🟢 Jump to Best Month (<span id="bestMonthLabel">--</span>)
+          </button>
+          <button onclick="jumpToMonth('worst')" class="px-3.5 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5">
+            🔴 Jump to Worst Month (<span id="worstMonthLabel">--</span>)
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Day Summary Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Trading Day Execution Summary</div>
+          <h2 id="calendarDateHeader" class="text-2xl font-black text-white mt-1">--</h2>
+          <div class="flex items-center gap-4 text-xs font-medium text-slate-300 mt-2">
+            <span>💼 Portfolio Equity: <strong id="calendarPortfolioValue" class="text-amber-400">--</strong></span>
+            <span>🎯 Stock Picks Today: <strong id="calendarPicksCount" class="text-blue-400">--</strong></span>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-400 font-semibold">Day Net PnL</div>
+          <div id="calendarDayPnL" class="text-3xl font-black text-emerald-400">+₹0.00</div>
+          <div id="calendarDayReturn" class="text-xs font-bold text-emerald-500">+0.00%</div>
+        </div>
+      </div>
+
+      <!-- TradingView Chart Container -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-3 px-2">
+          <div class="flex items-center gap-3">
+            <span id="chartStockSymbol" class="text-lg font-black text-white">--</span>
+            <span class="text-xs font-bold text-emerald-400 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+              ⏱️ Intraday 60-Minute Candles (09:15 to 15:15)
+            </span>
+          </div>
+          <span class="text-xs text-slate-400 font-medium">Click any stock below to render its hourly intraday chart</span>
+        </div>
+
+        <div id="calendarTvChartContainer" class="w-full h-[450px] rounded-xl overflow-hidden"></div>
+
+        <!-- Screener Explanation Box -->
+        <div class="mt-4 p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300">
+          <strong class="text-emerald-400 font-bold">🔍 Algorithm Screener Selection Logic:</strong>
+          <span id="screenerLogicText" class="ml-1">--</span>
+        </div>
+      </div>
+
+      <!-- Selected Stocks List for Selected Day -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-extrabold text-white">Stock Picks Selected Today</h3>
+        <div id="dayStocksGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"></div>
+      </div>
+    </div>
+
+    <!-- SHOWCASE VIEW SECTION -->
+    <div id="showcaseViewSection" class="space-y-6 hidden">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-3">
+            <span id="activeSymbol" class="text-2xl font-black text-white">--</span>
+            <span id="activeTag" class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">WINNER</span>
+            <span id="activeStrategy" class="text-xs text-slate-400 font-semibold px-3 py-1 rounded-full bg-slate-800 border border-slate-700">52W High Breakout</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-300 mt-2">
+            <span>📅 Entry: <strong id="activeEntryDate" class="text-white">--</strong> @ $<span id="activeEntryPrice" class="text-blue-400">--</span></span>
+            <span>📅 Exit: <strong id="activeExitDate" class="text-white">--</strong> @ $<span id="activeExitPrice" class="text-purple-400">--</span></span>
+            <span>⏱️ Duration: <strong id="activeHoldDays" class="text-amber-400">--</strong></span>
+            <span>🎯 Exit Reason: <strong id="activeReason" class="text-slate-300">--</strong></span>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-400 font-semibold">Net Trade Return</div>
+          <div id="activeReturn" class="text-3xl font-black text-emerald-400">+0.0%</div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <div id="showcaseTvChartContainer" class="w-full h-[450px] rounded-xl overflow-hidden"></div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="space-y-2">
+          <div class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+            <span>🟢 5 TOP WINNING TRADES</span>
+            <div class="flex-1 h-px bg-emerald-500/20"></div>
+          </div>
+          <div id="winnersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"></div>
+        </div>
+        <div class="space-y-2 pt-2">
+          <div class="text-xs font-bold uppercase tracking-wider text-red-400 flex items-center gap-2">
+            <span>🔴 5 TOP LOSING TRADES</span>
+            <div class="flex-1 h-px bg-red-500/20"></div>
+          </div>
+          <div id="losersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let calendarSummary = null;
+    let showcaseExamples = [];
+    let currentView = 'CALENDAR';
+    let currentDayIndex = 0;
+    let selectedCalendarStock = null;
+    let selectedShowcaseTrade = null;
+
+    let calTvChart = null;
+    let calCandleSeries = null;
+    let calVolumeSeries = null;
+
+    let showTvChart = null;
+    let showCandleSeries = null;
+    let showVolumeSeries = null;
+
+    async function init() {
+      try {
+        const [sumRes, exRes] = await Promise.all([
+          fetch('/calendar_summary.json'),
+          fetch('/examples.json')
+        ]);
+
+        calendarSummary = await sumRes.json();
+        showcaseExamples = await exRes.json();
+
+        document.getElementById('bestMonthLabel').innerText = calendarSummary.bestMonth;
+        document.getElementById('worstMonthLabel').innerText = calendarSummary.worstMonth;
+
+        initCharts();
+        renderCalendarDay(0);
+      } catch (err) {
+        console.error("Initialization error:", err);
+      }
+    }
+
+    function initCharts() {
+      const cContainer = document.getElementById('calendarTvChartContainer');
+      calTvChart = LightweightCharts.createChart(cContainer, {
+        width: cContainer.clientWidth,
+        height: 450,
+        layout: { background: { type: 'solid', color: '#0f172a' }, textColor: '#94a3b8', fontSize: 12 },
+        grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        rightPriceScale: { borderColor: '#334155' },
+        timeScale: { borderColor: '#334155', timeVisible: true }
+      });
+      calVolumeSeries = calTvChart.addHistogramSeries({ priceFormat: { type: 'volume' }, scaleMargins: { top: 0.8, bottom: 0 } });
+      calCandleSeries = calTvChart.addCandlestickSeries({ upColor: '#10b981', downColor: '#ef4444', borderUpColor: '#10b981', borderDownColor: '#ef4444', wickUpColor: '#10b981', wickDownColor: '#ef4444' });
+
+      const sContainer = document.getElementById('showcaseTvChartContainer');
+      showTvChart = LightweightCharts.createChart(sContainer, {
+        width: sContainer.clientWidth,
+        height: 450,
+        layout: { background: { type: 'solid', color: '#0f172a' }, textColor: '#94a3b8', fontSize: 12 },
+        grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
+        rightPriceScale: { borderColor: '#334155' },
+        timeScale: { borderColor: '#334155', timeVisible: true }
+      });
+      showVolumeSeries = showTvChart.addHistogramSeries({ priceFormat: { type: 'volume' }, scaleMargins: { top: 0.8, bottom: 0 } });
+      showCandleSeries = showTvChart.addCandlestickSeries({ upColor: '#10b981', downColor: '#ef4444', borderUpColor: '#10b981', borderDownColor: '#ef4444', wickUpColor: '#10b981', wickDownColor: '#ef4444' });
+
+      window.addEventListener('resize', () => {
+        calTvChart.applyOptions({ width: cContainer.clientWidth });
+        showTvChart.applyOptions({ width: sContainer.clientWidth });
+      });
+    }
+
+    async function renderCalendarDay(index) {
+      if (!calendarSummary || index < 0 || index >= calendarSummary.days.length) return;
+      currentDayIndex = index;
+      const summaryItem = calendarSummary.days[index];
+
+      document.getElementById('calendarDatePicker').value = summaryItem.date;
+      document.getElementById('calendarDateHeader').innerText = summaryItem.date;
+      document.getElementById('calendarPortfolioValue').innerText = '₹' + summaryItem.portfolioValue.toLocaleString();
+      document.getElementById('calendarPicksCount').innerText = summaryItem.tradeCount + ' Stocks';
+
+      const isWin = summaryItem.dayPnL >= 0;
+      const pnlEl = document.getElementById('calendarDayPnL');
+      pnlEl.className = isWin ? 'text-3xl font-black text-emerald-400' : 'text-3xl font-black text-red-400';
+      pnlEl.innerText = (isWin ? '+₹' : '-₹') + Math.abs(summaryItem.dayPnL).toLocaleString();
+
+      const retEl = document.getElementById('calendarDayReturn');
+      retEl.className = isWin ? 'text-xs font-bold text-emerald-500' : 'text-xs font-bold text-red-500';
+      retEl.innerText = (isWin ? '+' : '') + summaryItem.dayReturnPct + '% Today';
+
+      // Fetch on-demand lightweight day JSON (~10 KB)
+      const dayRes = await fetch(`/days/${summaryItem.date}.json`);
+      const dayData = await dayRes.json();
+
+      const container = document.getElementById('dayStocksGrid');
+      container.innerHTML = '';
+
+      if (dayData.trades.length === 0) {
+        container.innerHTML = '<div class="col-span-5 p-6 text-center text-slate-500 font-semibold bg-slate-900 border border-slate-800 rounded-xl">💤 No Stock Breakout Signals Today. Held 100% Cash.</div>';
+        calCandleSeries.setData([]);
+        calVolumeSeries.setData([]);
+        document.getElementById('chartStockSymbol').innerText = 'No Trades Today';
+        document.getElementById('screenerLogicText').innerText = '0 stocks met the price > 50 SMA and volume > 1.5x average criteria today. Portfolio remained in 100% Cash.';
+        return;
+      }
+
+      dayData.trades.forEach((t) => {
+        const card = document.createElement('div');
+        const isTradeWin = t.tradePnL >= 0;
+        card.className = 'bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 cursor-pointer transition-all flex flex-col justify-between';
+        card.onclick = () => selectCalendarStock(t, dayData.date);
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-extrabold text-white text-base">${t.symbol}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase ${isTradeWin ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-red-500/20 text-red-400 border border-red-500/40'}">
+                ${isTradeWin ? '+' : ''}${t.returnPct}%
+              </span>
+            </div>
+            <div class="text-[11px] text-slate-400 space-y-1">
+              <div>Open: <strong class="text-slate-200">₹${t.open}</strong></div>
+              <div>Exit: <strong class="text-slate-200">₹${t.exitPrice}</strong></div>
+              <div>Volume: <strong class="text-blue-400">${t.volSurgeMult}x Avg</strong></div>
+              <div>PnL: <strong class="${isTradeWin ? 'text-emerald-400' : 'text-red-400'}">${isTradeWin ? '+₹' : '-₹'}${Math.abs(t.tradePnL)}</strong></div>
+            </div>
+          </div>
+          <div class="mt-3 pt-2 border-t border-slate-800/80 text-[10px] font-semibold text-slate-400 truncate">
+            ${t.exitReason}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      selectCalendarStock(dayData.trades[0], dayData.date);
+    }
+
+    function selectCalendarStock(t, dateStr) {
+      selectedCalendarStock = t;
+      document.getElementById('chartStockSymbol').innerText = t.symbol + ' Intraday Chart (' + dateStr + ' | Trade PnL: ' + (t.tradePnL >= 0 ? '+₹' : '-₹') + Math.abs(t.tradePnL) + ')';
+      document.getElementById('screenerLogicText').innerText = t.screenerReason;
+
+      const tvCandles = [];
+      const tvVolume = [];
+
+      // Render 60-Minute Intraday Hourly Candles (09:15 to 15:15)
+      t.hourlyCandles.forEach(c => {
+        // Convert time format to Unix timestamp or time string for TradingView chart
+        const timeStamp = Math.floor(new Date(`${dateStr}T${c.time}:00Z`).getTime() / 1000);
+        tvCandles.push({ time: timeStamp, open: c.open, high: c.high, low: c.low, close: c.close });
+        tvVolume.push({ time: timeStamp, value: c.volume, color: c.close >= c.open ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)' });
+      });
+
+      calCandleSeries.setData(tvCandles);
+      calVolumeSeries.setData(tvVolume);
+
+      const isWin = t.returnPct >= 0;
+      const startTimeStamp = Math.floor(new Date(`${dateStr}T09:15:00Z`).getTime() / 1000);
+      const exitTimeStamp = Math.floor(new Date(`${dateStr}T${t.exitTime}:00Z`).getTime() / 1000);
+
+      calCandleSeries.setMarkers([
+        { time: startTimeStamp, position: 'belowBar', color: '#3b82f6', shape: 'arrowUp', text: `BUY 09:15 (₹${t.open})` },
+        { time: exitTimeStamp, position: 'aboveBar', color: isWin ? '#10b981' : '#ef4444', shape: 'arrowDown', text: `SELL ${t.exitTime} (${isWin ? '+' : ''}${t.returnPct}%)` }
+      ]);
+
+      calTvChart.timeScale().fitContent();
+    }
+
+    function navigateDay(delta) {
+      const nextIdx = currentDayIndex + delta;
+      if (nextIdx >= 0 && nextIdx < calendarSummary.days.length) {
+        renderCalendarDay(nextIdx);
+      }
+    }
+
+    function onDateSelect(val) {
+      const idx = calendarSummary.days.findIndex(d => d.date === val);
+      if (idx !== -1) renderCalendarDay(idx);
+    }
+
+    function jumpToMonth(type) {
+      const targetMonth = type === 'best' ? calendarSummary.bestMonth : calendarSummary.worstMonth;
+      const idx = calendarSummary.days.findIndex(d => d.date.startsWith(targetMonth));
+      if (idx !== -1) renderCalendarDay(idx);
+    }
+
+    function switchView(view) {
+      currentView = view;
+      const calSec = document.getElementById('calendarViewSection');
+      const showSec = document.getElementById('showcaseViewSection');
+
+      if (view === 'CALENDAR') {
+        calSec.classList.remove('hidden');
+        showSec.classList.add('hidden');
+        document.getElementById('viewTabCalendar').className = 'px-4 py-2 rounded-lg bg-emerald-500 text-slate-950 font-extrabold shadow-md transition-all';
+        document.getElementById('viewTab52W').className = 'px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all';
+        document.getElementById('viewTabIntra').className = 'px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all';
+      } else {
+        calSec.classList.add('hidden');
+        showSec.classList.remove('hidden');
+        document.getElementById('viewTabCalendar').className = 'px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all';
+
+        if (view === '52W_HIGH') {
+          document.getElementById('viewTab52W').className = 'px-4 py-2 rounded-lg bg-emerald-500 text-slate-950 font-extrabold shadow-md transition-all';
+          document.getElementById('viewTabIntra').className = 'px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all';
+        } else {
+          document.getElementById('viewTab52W').className = 'px-4 py-2 rounded-lg text-slate-400 hover:text-white transition-all';
+          document.getElementById('viewTabIntra').className = 'px-4 py-2 rounded-lg bg-emerald-500 text-slate-950 font-extrabold shadow-md transition-all';
+        }
+        renderShowcase(view);
+      }
+    }
+
+    function renderShowcase(strat) {
+      const filtered = showcaseExamples.filter(e => e.strategy === strat);
+      const winners = filtered.filter(e => e.tag === 'WINNER').slice(0, 5);
+      const losers = filtered.filter(e => e.tag === 'LOSER').slice(0, 5);
+
+      renderShowcaseGrid('winnersGrid', winners);
+      renderShowcaseGrid('losersGrid', losers);
+
+      if (winners.length > 0) selectShowcaseTrade(winners[0]);
+    }
+
+    function renderShowcaseGrid(id, list) {
+      const container = document.getElementById(id);
+      container.innerHTML = '';
+      list.forEach(t => {
+        const card = document.createElement('div');
+        const isWin = t.returnPct >= 0;
+        card.className = 'bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 cursor-pointer transition-all flex flex-col justify-between';
+        card.onclick = () => selectShowcaseTrade(t);
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-extrabold text-white text-base">${t.symbol}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-black ${isWin ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-red-500/20 text-red-400 border border-red-500/40'}">
+                ${isWin ? '+' : ''}${t.returnPct}%
+              </span>
+            </div>
+            <div class="text-[11px] text-slate-400 space-y-1">
+              <div>Entry: <strong class="text-slate-200">₹${t.entryPrice}</strong></div>
+              <div>Exit: <strong class="text-slate-200">₹${t.exitPrice}</strong></div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function selectShowcaseTrade(t) {
+      selectedShowcaseTrade = t;
+      document.getElementById('activeSymbol').innerText = t.symbol;
+      document.getElementById('activeStrategy').innerText = t.strategy === '52W_HIGH' ? '52W High Breakout' : '30-Min Intraday Volume Breakout';
+      document.getElementById('activeEntryDate').innerText = t.entryDate;
+      document.getElementById('activeExitDate').innerText = t.exitDate;
+      document.getElementById('activeEntryPrice').innerText = t.entryPrice;
+      document.getElementById('activeExitPrice').innerText = t.exitPrice;
+      document.getElementById('activeHoldDays').innerText = t.holdDays + ' days';
+      document.getElementById('activeReason').innerText = t.exitReason;
+
+      const isWin = t.returnPct >= 0;
+      const tagEl = document.getElementById('activeTag');
+      tagEl.className = isWin ? 'px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'px-3 py-1 rounded-full text-xs font-black bg-red-500/20 text-red-400 border border-red-500/40';
+      tagEl.innerText = isWin ? 'WINNER' : 'LOSER';
+
+      const retEl = document.getElementById('activeReturn');
+      retEl.className = isWin ? 'text-3xl font-black text-emerald-400' : 'text-3xl font-black text-red-400';
+      retEl.innerText = (isWin ? '+' : '') + t.returnPct + '%';
+
+      const tvCandles = [];
+      const tvVolume = [];
+      t.candles.forEach(c => {
+        tvCandles.push({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close });
+        tvVolume.push({ time: c.time, value: c.volume, color: c.close >= c.open ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)' });
+      });
+
+      showCandleSeries.setData(tvCandles);
+      showVolumeSeries.setData(tvVolume);
+
+      showCandleSeries.setMarkers([
+        { time: t.entryDate, position: 'belowBar', color: '#3b82f6', shape: 'arrowUp', text: `BUY (₹${t.entryPrice})` },
+        { time: t.exitDate, position: 'aboveBar', color: isWin ? '#10b981' : '#ef4444', shape: 'arrowDown', text: `SELL (${isWin ? '+' : ''}${t.returnPct}%)` }
+      ]);
+
+      showTvChart.timeScale().fitContent();
+    }
+
+    init();
+  </script>
+</body>
+</html>

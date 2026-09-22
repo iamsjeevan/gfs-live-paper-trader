@@ -1,0 +1,58 @@
+name: Autonomous GFS 1-Year Paper Trading Engine
+
+on:
+  schedule:
+    # 1. India Market Close: Mon-Fri at 11:45 UTC (5:15 PM IST)
+    - cron: '45 11 * * 1-5'
+    # 2. US Market Close: Mon-Fri at 21:45 UTC (5:45 PM EST)
+    - cron: '45 21 * * 1-5'
+  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+
+permissions:
+  contents: write # Allows committing updated portfolio state back to repository
+
+jobs:
+  run-paper-trading:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance pandas numpy requests
+
+      - name: Run GFS Paper Trading Daily Cycle
+        env:
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST || 'smtp.gmail.com' }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT || 587 }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          INDIA_CAPITAL: ${{ secrets.INDIA_CAPITAL || 100000.0 }}
+          USA_CAPITAL: ${{ secrets.USA_CAPITAL || 10000.0 }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python -m live_paper_trader.runner --portfolio all
+
+      - name: Commit and Push Portfolio State
+        run: |
+          git config --global user.name "GFS Paper Trading Bot"
+          git config --global user.email "bot@gfs-paper-trading.local"
+          git add reports/paper_trading/
+          if git diff --staged --quiet; then
+            echo "No state changes to commit."
+          else
+            git commit -m "chore(paper-trading): update daily portfolio state and equity curve [skip ci]"
+            git push
+          fi

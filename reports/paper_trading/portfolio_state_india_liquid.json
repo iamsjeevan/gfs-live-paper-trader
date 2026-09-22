@@ -1,0 +1,28 @@
+{
+  "portfolio_id": "india_liquid",
+  "label": "INDIA (Liquid 500)",
+  "market": "INDIA",
+  "currency": "INR",
+  "created_date": "2026-09-22",
+  "last_updated": "2026-09-22",
+  "initial_capital": 100000.0,
+  "cash": 0.0,
+  "proxy_symbol": "GOLDBEES.NS",
+  "proxy_units": 800.2891807636518,
+  "proxy_last_price": 124.83000183105469,
+  "proxy_val": 99900.0999000999,
+  "stock_invested": 0.0,
+  "total_equity": 100000.0,
+  "positions": {},
+  "closed_trades": [],
+  "daily_equity_history": [
+    {
+      "date": "2026-09-22",
+      "total_equity": 100000.0,
+      "cash": 0.0,
+      "proxy_val": 100000.0,
+      "stock_val": 0.0,
+      "positions_count": 0
+    }
+  ]
+}

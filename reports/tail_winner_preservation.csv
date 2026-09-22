@@ -1,0 +1,17 @@
+Portfolio Configuration,Trades Taken,Winners > 25%,Winners > 50%,Winners > 100%,Winners > 200%,BLISSGVS Retained,Capture % (>50%),Capture % (>100%)
+Unrestricted Technical Universe (Baseline),4631,262,80,19,3,True,100.0,100.0
+Model A: Equal Weight (Baseline) (10 Slots),1433,76,26,8,1,True,32.5,42.10526315789473
+Model A: Equal Weight (Baseline) (15 Slots),1970,97,29,9,1,True,36.25,47.368421052631575
+Model A: Equal Weight (Baseline) (20 Slots),2334,130,36,11,1,True,45.0,57.89473684210527
+Model B1: Linear Rank Weighted (10 Slots),1449,76,24,7,1,True,30.0,36.84210526315789
+Model B1: Linear Rank Weighted (15 Slots),1956,100,30,10,1,True,37.5,52.63157894736842
+Model B1: Linear Rank Weighted (20 Slots),2363,130,36,11,1,True,45.0,57.89473684210527
+Model B2: Inverse Rank Weighted (10 Slots),1448,76,24,7,1,True,30.0,36.84210526315789
+Model B2: Inverse Rank Weighted (15 Slots),1948,97,29,9,1,True,36.25,47.368421052631575
+Model B2: Inverse Rank Weighted (20 Slots),2349,130,37,11,1,True,46.25,57.89473684210527
+Model C: Relative Volume Weighted (10 Slots),1431,81,26,8,1,True,32.5,42.10526315789473
+Model C: Relative Volume Weighted (15 Slots),1952,112,34,10,2,True,42.5,52.63157894736842
+Model C: Relative Volume Weighted (20 Slots),2403,131,38,12,2,True,47.5,63.1578947368421
+Model D: Composite Tech+Fund Weighted (10 Slots),1431,75,23,7,1,True,28.749999999999996,36.84210526315789
+Model D: Composite Tech+Fund Weighted (15 Slots),1951,103,27,9,2,True,33.75,47.368421052631575
+Model D: Composite Tech+Fund Weighted (20 Slots),2358,131,36,14,3,True,45.0,73.68421052631578

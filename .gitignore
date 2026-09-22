@@ -1,0 +1,32 @@
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Heavy local data directories and databases (do not upload to github)
+*.db
+*.sqlite
+*.sqlite3
+data/
+crypto_data/
+crypto-topten-backtest/
+instocks.db
+
+# Logs & temp files
+*.log
+logs/
+.tempmediaStorage/
+scratch/
+
+# Keep reports/paper_trading state files tracked
+!reports/paper_trading/
+!reports/paper_trading/*.json
+!reports/paper_trading/*.md

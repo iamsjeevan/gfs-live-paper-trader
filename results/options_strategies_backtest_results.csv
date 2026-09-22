@@ -1,0 +1,7 @@
+,Initial Capital (₹),Final Capital (₹),Total Return (%),CAGR (%),Max Drawdown (%),Win Rate (%),Total Trades,Sharpe Ratio,Sortino Ratio,Calmar Ratio
+Nifty Buy & Hold (Benchmark),100000.0,172764.92,72.76,10.36,17.23,0.0,0.0,0.34,0.48,0.6
+Short Straddle (25% SL),100000.0,50992.46,-49.01,-11.43,55.77,30.23,43.0,-1.16,-1.51,-0.21
+Iron Condor (Defined Risk),100000.0,318301.39,218.3,23.21,59.46,71.79,280.0,0.57,0.69,0.39
+Intraday Momentum Buying,100000.0,848430.96,748.43,47.02,2.93,82.08,759.0,6.46,11.02,16.08
+Covered Call (Nifty ETF),100000.0,299565.02,199.57,21.87,36.48,71.28,94.0,0.52,0.47,0.6
+Cash Secured Puts (Blue Chips),100000.0,90016.79,-9.98,-1.88,15.42,64.89,94.0,-1.23,-0.99,-0.12

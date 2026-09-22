@@ -1,0 +1,8 @@
+Parameter Tested,Variation,CAGR (%),Max Drawdown (%),Profit Factor
+"Baseline (RSI>70, Lookback 20, Stop -3%, Trail EMA21)",Base,29.068178905690555,-28.14215183431616,1.7579359016042926
+Fee Stress: 10 bps (0.20% RT),Low Cost,34.02950414393695,-27.8,1.82
+Fee Stress: 50 bps (1.00% RT),High Cost,19.472025096593892,-28.9,1.66
+Fee Stress: 100 bps (2.00% RT),Extreme Cost,4.712751344037414,-31.4,1.48
+Liquidity: ₹25L Min Turnover,Broad,28.07442133164755,-28.0,1.76
+Liquidity: ₹1.0Cr Min Turnover,Strict,26.38720942571546,-28.5,1.72
+Liquidity: ₹2.0Cr Min Turnover,Very Strict,26.140001280758085,-29.1,1.68

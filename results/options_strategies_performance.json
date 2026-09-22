@@ -1,0 +1,74 @@
+{
+    "Nifty Buy & Hold (Benchmark)": {
+        "Initial Capital (\u20b9)": 100000.0,
+        "Final Capital (\u20b9)": 172764.92,
+        "Total Return (%)": 72.76,
+        "CAGR (%)": 10.36,
+        "Max Drawdown (%)": 17.23,
+        "Win Rate (%)": 0.0,
+        "Total Trades": 0,
+        "Sharpe Ratio": 0.34,
+        "Sortino Ratio": 0.48,
+        "Calmar Ratio": 0.6
+    },
+    "Short Straddle (25% SL)": {
+        "Initial Capital (\u20b9)": 100000.0,
+        "Final Capital (\u20b9)": 50992.46,
+        "Total Return (%)": -49.01,
+        "CAGR (%)": -11.43,
+        "Max Drawdown (%)": 55.77,
+        "Win Rate (%)": 30.23,
+        "Total Trades": 43,
+        "Sharpe Ratio": -1.16,
+        "Sortino Ratio": -1.51,
+        "Calmar Ratio": -0.21
+    },
+    "Iron Condor (Defined Risk)": {
+        "Initial Capital (\u20b9)": 100000.0,
+        "Final Capital (\u20b9)": 318301.39,
+        "Total Return (%)": 218.3,
+        "CAGR (%)": 23.21,
+        "Max Drawdown (%)": 59.46,
+        "Win Rate (%)": 71.79,
+        "Total Trades": 280,
+        "Sharpe Ratio": 0.57,
+        "Sortino Ratio": 0.69,
+        "Calmar Ratio": 0.39
+    },
+    "Intraday Momentum Buying": {
+        "Initial Capital (\u20b9)": 100000.0,
+        "Final Capital (\u20b9)": 848430.96,
+        "Total Return (%)": 748.43,
+        "CAGR (%)": 47.02,
+        "Max Drawdown (%)": 2.93,
+        "Win Rate (%)": 82.08,
+        "Total Trades": 759,
+        "Sharpe Ratio": 6.46,
+        "Sortino Ratio": 11.02,
+        "Calmar Ratio": 16.08
+    },
+    "Covered Call (Nifty ETF)": {
+        "Initial Capital (\u20b9)": 100000.0,
+        "Final Capital (\u20b9)": 299565.02,
+        "Total Return (%)": 199.57,
+        "CAGR (%)": 21.87,
+        "Max Drawdown (%)": 36.48,
+        "Win Rate (%)": 71.28,
+        "Total Trades": 94,
+        "Sharpe Ratio": 0.52,
+        "Sortino Ratio": 0.47,
+        "Calmar Ratio": 0.6
+    },
+    "Cash Secured Puts (Blue Chips)": {
+        "Initial Capital (\u20b9)": 100000.0,
+        "Final Capital (\u20b9)": 90016.79,
+        "Total Return (%)": -9.98,
+        "CAGR (%)": -1.88,
+        "Max Drawdown (%)": 15.42,
+        "Win Rate (%)": 64.89,
+        "Total Trades": 94,
+        "Sharpe Ratio": -1.23,
+        "Sortino Ratio": -0.99,
+        "Calmar Ratio": -0.12
+    }
+}

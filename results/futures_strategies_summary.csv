@@ -1,0 +1,49 @@
+Asset,Strategy,Sizing_Mode,Initial_Capital,Final_Capital,Total_Return_Pct,CAGR_Pct,Max_Drawdown_Pct,Total_Trades,Win_Rate_Pct,Gross_Profit,Gross_Loss,Profit_Factor,Sharpe_Ratio,Sortino_Ratio,Margin_Calls
+Nifty 50 Futures,"Supertrend (10,3)",Micro Futures 1.0x (Unleveraged),100000.0,59074.63,-40.93,-8.91,47.73,53,22.64,58301.26,97799.69,0.6,-0.6,-0.87,0
+Nifty 50 Futures,"Supertrend (10,3)",Micro Futures 2.0x (Leveraged),100000.0,31216.39,-68.78,-18.64,73.96,53,22.64,99676.13,166927.86,0.6,-0.6,-0.87,0
+Nifty 50 Futures,"Supertrend (10,3)",Fixed 1 Contract Lot (Real Margin Sized),100000.0,-175554.22,-275.55,-100.0,100.0,53,26.42,332671.56,554981.1,0.6,0.0,inf,561
+Nifty 50 Futures,"Supertrend (7,2)",Micro Futures 1.0x (Unleveraged),100000.0,96269.29,-3.73,-0.67,22.9,80,32.5,107913.27,110960.74,0.97,0.02,0.03,0
+Nifty 50 Futures,"Supertrend (7,2)",Micro Futures 2.0x (Leveraged),100000.0,82977.26,-17.02,-3.25,43.12,80,32.5,206357.55,222194.56,0.93,0.02,0.03,0
+Nifty 50 Futures,"Supertrend (7,2)",Fixed 1 Contract Lot (Real Margin Sized),100000.0,100389.17,0.39,0.07,89.08,80,35.0,549210.57,500428.46,1.1,0.39,0.56,126
+Nifty 50 Futures,EMA 10/50 Crossover,Micro Futures 1.0x (Unleveraged),100000.0,101063.24,1.06,0.19,25.49,39,38.46,57931.27,58237.26,0.99,0.08,0.12,0
+Nifty 50 Futures,EMA 10/50 Crossover,Micro Futures 2.0x (Leveraged),100000.0,91378.36,-8.62,-1.59,45.42,39,35.9,101201.38,112125.33,0.9,0.08,0.12,0
+Nifty 50 Futures,EMA 10/50 Crossover,Fixed 1 Contract Lot (Real Margin Sized),100000.0,137183.68,37.18,5.76,70.3,39,41.03,336554.55,273250.55,1.23,0.42,0.63,6
+Nifty 50 Futures,SMA 20/200 Crossover,Micro Futures 1.0x (Unleveraged),100000.0,48582.48,-51.42,-12.01,56.54,10,10.0,11477.89,61367.19,0.19,-0.85,-1.18,0
+Nifty 50 Futures,SMA 20/200 Crossover,Micro Futures 2.0x (Leveraged),100000.0,21100.02,-78.9,-24.1,82.15,10,10.0,10214.04,87514.52,0.12,-0.85,-1.18,0
+Nifty 50 Futures,SMA 20/200 Crossover,Fixed 1 Contract Lot (Real Margin Sized),100000.0,-186413.97,-286.41,-100.0,100.0,10,10.0,124671.63,372235.2,0.33,0.0,inf,1250
+Nifty 50 Futures,Donchian Breakout (20d),Micro Futures 1.0x (Unleveraged),100000.0,78775.21,-21.22,-4.14,27.84,68,27.94,50831.2,72055.99,0.71,-0.42,-0.42,0
+Nifty 50 Futures,Donchian Breakout (20d),Micro Futures 2.0x (Leveraged),100000.0,59149.37,-40.85,-8.89,49.18,68,27.94,97847.72,138698.35,0.71,-0.42,-0.42,0
+Nifty 50 Futures,Donchian Breakout (20d),Fixed 1 Contract Lot (Real Margin Sized),100000.0,-34403.44,-134.4,-100.0,100.0,68,33.82,269605.87,375730.87,0.72,0.0,inf,190
+Nifty 50 Futures,ATR Volatility Expansion,Micro Futures 1.0x (Unleveraged),100000.0,74808.69,-25.19,-5.01,34.36,61,21.31,54949.1,80140.41,0.69,-0.44,-0.5,0
+Nifty 50 Futures,ATR Volatility Expansion,Micro Futures 2.0x (Leveraged),100000.0,52509.53,-47.49,-10.79,58.13,61,21.31,104638.51,152128.98,0.69,-0.44,-0.5,0
+Nifty 50 Futures,ATR Volatility Expansion,Fixed 1 Contract Lot (Real Margin Sized),100000.0,-62979.4,-162.98,-100.0,100.0,61,24.59,281511.44,412220.9,0.68,0.0,inf,197
+Nifty 50 Futures,Buy & Hold Benchmark,Micro Futures 1.0x (Unleveraged),100000.0,162224.7,62.22,8.95,17.76,0,0.0,0.0,0.0,0.0,0.69,0.95,0
+Nifty 50 Futures,Buy & Hold Benchmark,Micro Futures 2.0x (Leveraged),100000.0,235405.45,135.41,16.38,34.07,0,0.0,0.0,0.0,0.0,0.69,0.95,0
+Nifty 50 Futures,Buy & Hold Benchmark,Fixed 1 Contract Lot (Real Margin Sized),100000.0,324040.62,224.04,23.17,40.03,0,0.0,0.0,0.0,0.0,0.79,1.08,0
+Nifty 50 Futures,Supertrend (Intraday 30-min),Micro Futures 1.0x (Unleveraged),100000.0,40114.5,-59.89,-14.95,63.26,586,41.13,133460.82,193243.49,0.69,-1.09,-1.55,0
+Nifty 50 Futures,Supertrend (Intraday 30-min),Micro Futures 2.0x (Leveraged),100000.0,14391.59,-85.61,-29.07,87.84,586,41.13,140325.61,225860.11,0.62,-1.09,-1.55,0
+Nifty 50 Futures,Supertrend (Intraday 30-min),Fixed 1 Contract Lot (Real Margin Sized),100000.0,-280471.85,-380.47,-100.0,100.0,586,42.83,1361313.94,1592844.0,0.85,-0.48,-0.15,1336
+BankNifty Futures,"Supertrend (10,3)",Micro Futures 1.0x (Unleveraged),100000.0,49892.34,-50.11,-11.59,50.84,49,34.69,46758.41,97010.66,0.48,-0.6,-0.84,0
+BankNifty Futures,"Supertrend (10,3)",Micro Futures 2.0x (Leveraged),100000.0,20723.59,-79.28,-24.34,79.87,49,34.69,61150.47,140481.42,0.44,-0.6,-0.84,0
+BankNifty Futures,"Supertrend (10,3)",Fixed 1 Contract Lot (Real Margin Sized),100000.0,-304132.98,-404.13,-100.0,100.0,49,36.73,474213.35,832203.91,0.57,0.0,inf,1262
+BankNifty Futures,"Supertrend (7,2)",Micro Futures 1.0x (Unleveraged),100000.0,61819.38,-38.18,-8.17,44.85,81,33.33,71099.3,108795.47,0.65,-0.39,-0.54,0
+BankNifty Futures,"Supertrend (7,2)",Micro Futures 2.0x (Leveraged),100000.0,31803.44,-68.2,-18.37,72.46,81,33.33,97794.46,165482.64,0.59,-0.39,-0.54,0
+BankNifty Futures,"Supertrend (7,2)",Fixed 1 Contract Lot (Real Margin Sized),100000.0,-128169.34,-228.17,-100.0,100.0,81,35.8,671796.47,834624.94,0.8,0.0,inf,1077
+BankNifty Futures,EMA 10/50 Crossover,Micro Futures 1.0x (Unleveraged),100000.0,64436.49,-35.56,-7.49,37.88,35,28.57,33345.35,68985.12,0.48,-0.35,-0.45,0
+BankNifty Futures,EMA 10/50 Crossover,Micro Futures 2.0x (Leveraged),100000.0,34490.87,-65.51,-17.19,66.81,35,28.57,40730.14,106211.75,0.38,-0.35,-0.45,0
+BankNifty Futures,EMA 10/50 Crossover,Fixed 1 Contract Lot (Real Margin Sized),100000.0,-107386.05,-207.39,-100.0,100.0,35,31.43,320418.39,484207.77,0.66,0.0,inf,1373
+BankNifty Futures,SMA 20/200 Crossover,Micro Futures 1.0x (Unleveraged),100000.0,42950.14,-57.05,-13.91,58.95,13,23.08,10730.02,67551.87,0.16,-0.75,-0.96,0
+BankNifty Futures,SMA 20/200 Crossover,Micro Futures 2.0x (Leveraged),100000.0,15311.3,-84.69,-28.29,85.94,13,23.08,8543.47,93068.91,0.09,-0.75,-0.96,0
+BankNifty Futures,SMA 20/200 Crossover,Fixed 1 Contract Lot (Real Margin Sized),100000.0,-368495.99,-468.5,-100.0,100.0,13,23.08,151193.1,575016.87,0.26,0.0,inf,1337
+BankNifty Futures,Donchian Breakout (20d),Micro Futures 1.0x (Unleveraged),100000.0,82098.31,-17.9,-3.44,28.62,65,41.54,54784.77,72686.46,0.75,-0.23,-0.25,0
+BankNifty Futures,Donchian Breakout (20d),Micro Futures 2.0x (Leveraged),100000.0,62166.0,-37.83,-8.08,52.01,65,40.0,88206.97,126040.97,0.7,-0.23,-0.25,0
+BankNifty Futures,Donchian Breakout (20d),Fixed 1 Contract Lot (Real Margin Sized),100000.0,17707.92,-82.29,-26.42,100.0,65,41.54,459327.23,506033.78,0.91,0.0,inf,534
+BankNifty Futures,ATR Volatility Expansion,Micro Futures 1.0x (Unleveraged),100000.0,66536.87,-33.46,-6.97,42.8,57,24.56,45316.37,78779.5,0.58,-0.46,-0.5,0
+BankNifty Futures,ATR Volatility Expansion,Micro Futures 2.0x (Leveraged),100000.0,39671.79,-60.33,-15.11,69.68,57,24.56,66164.56,126492.77,0.52,-0.46,-0.5,0
+BankNifty Futures,ATR Volatility Expansion,Fixed 1 Contract Lot (Real Margin Sized),100000.0,-118078.98,-218.08,-100.0,100.0,57,28.07,420896.19,601059.45,0.7,0.0,inf,716
+BankNifty Futures,Buy & Hold Benchmark,Micro Futures 1.0x (Unleveraged),100000.0,174474.58,74.47,10.37,21.41,0,0.0,0.0,0.0,0.0,0.65,0.89,0
+BankNifty Futures,Buy & Hold Benchmark,Micro Futures 2.0x (Leveraged),100000.0,253562.18,153.56,17.93,40.55,0,0.0,0.0,0.0,0.0,0.65,0.89,0
+BankNifty Futures,Buy & Hold Benchmark,Fixed 1 Contract Lot (Real Margin Sized),100000.0,457155.1,357.16,30.91,53.89,0,0.0,0.0,0.0,0.0,0.78,1.06,0
+BankNifty Futures,Supertrend (Intraday 30-min),Micro Futures 1.0x (Unleveraged),100000.0,35239.4,-64.76,-16.88,70.62,652,43.25,179214.97,243788.5,0.74,-0.95,-1.33,0
+BankNifty Futures,Supertrend (Intraday 30-min),Micro Futures 2.0x (Leveraged),100000.0,10337.34,-89.66,-33.11,92.61,652,42.94,212737.98,302290.41,0.7,-0.95,-1.33,0
+BankNifty Futures,Supertrend (Intraday 30-min),Fixed 1 Contract Lot (Real Margin Sized),100000.0,-505958.44,-605.96,-100.0,100.0,652,44.94,2240005.98,2626474.29,0.85,0.0,inf,1302

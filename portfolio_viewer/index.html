@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QTDL-Momentum Live Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header & Controls */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .date-display {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .rebalance-badge {
+            display: none;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 1px solid var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.special {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.4);
+        }
+
+        button.special:hover {
+            background: linear-gradient(135deg, #7c3aed, #db2777);
+            box-shadow: 0 10px 15px -3px rgba(236, 72, 153, 0.5);
+        }
+
+        /* Portfolio Summary */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .stat-title {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .nav-up { color: var(--success); }
+        .nav-down { color: var(--danger); }
+
+        /* Holdings Grid */
+        .holdings-header {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .holdings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .holding-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .holding-card:hover {
+            transform: scale(1.02);
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .ticker {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #60a5fa;
+            margin-bottom: 0.5rem;
+        }
+
+        .holding-detail {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            color: var(--text-muted);
+        }
+
+        .holding-detail span.val {
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .weight-bar-bg {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 0.75rem;
+            overflow: hidden;
+        }
+
+        .weight-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+            transition: width 0.5s ease-out;
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: 300;
+            z-index: 1000;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="loading">Loading 2000+ days of backtest data...</div>
+
+    <div class="container" style="display: none;" id="app">
+        <!-- Header Controls -->
+        <div class="glass-panel">
+            <div class="header">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="date-display" id="dateDisplay">2018-01-01</div>
+                    <div class="rebalance-badge" id="rebalBadge">REBALANCE DAY</div>
+                </div>
+                <div class="controls">
+                    <button id="btnPrev">&larr; Prev Day</button>
+                    <button id="btnNext">Next Day &rarr;</button>
+                    <button id="btnNextRebal" class="special">Fast Forward to Next Rebalance &raquo;</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary-grid">
+            <div class="glass-panel stat-card">
+                <div class="stat-title">Total Portfolio Value (NAV)</div>
+                <div class="stat-value" id="navDisplay">₹100,000</div>
+            </div>
+            <div class="glass-panel stat-card">
+                <div class="stat-title">Cash Idle</div>
+                <div class="stat-value" id="cashDisplay">₹100,000</div>
+            </div>
+            <div class="glass-panel stat-card">
+                <div class="stat-title">Invested</div>
+                <div class="stat-value" id="investedDisplay">₹0</div>
+            </div>
+        </div>
+
+        <!-- Holdings -->
+        <div class="glass-panel">
+            <div class="holdings-header">
+                <span>Current Holdings</span>
+                <span style="font-size: 1rem; color: var(--text-muted); font-weight: 400;" id="holdingsCount">0 Stocks</span>
+            </div>
+            <div class="holdings-grid" id="holdingsGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let portfolioData = [];
+        let currentIndex = 0;
+
+        const dateDisplay = document.getElementById('dateDisplay');
+        const navDisplay = document.getElementById('navDisplay');
+        const cashDisplay = document.getElementById('cashDisplay');
+        const investedDisplay = document.getElementById('investedDisplay');
+        const holdingsGrid = document.getElementById('holdingsGrid');
+        const rebalBadge = document.getElementById('rebalBadge');
+        const holdingsCount = document.getElementById('holdingsCount');
+        
+        const formatMoney = (num) => '₹' + num.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        async function init() {
+            try {
+                // Assuming data is served on the same port
+                const res = await fetch('../portfolio_data.json');
+                portfolioData = await res.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
+                
+                renderState();
+            } catch (err) {
+                document.getElementById('loading').innerHTML = "Error loading data. Make sure you are running a local server.<br><br>Run: <code>python -m http.server</code> in the project root.";
+            }
+        }
+
+        function renderState() {
+            const state = portfolioData[currentIndex];
+            const prevNav = currentIndex > 0 ? portfolioData[currentIndex-1].nav : state.nav;
+            
+            // Header
+            dateDisplay.innerText = state.date;
+            rebalBadge.style.display = state.is_rebalance ? 'block' : 'none';
+            
+            // Summary
+            navDisplay.innerText = formatMoney(state.nav);
+            if (state.nav > prevNav) {
+                navDisplay.className = 'stat-value nav-up';
+            } else if (state.nav < prevNav) {
+                navDisplay.className = 'stat-value nav-down';
+            } else {
+                navDisplay.className = 'stat-value';
+            }
+
+            cashDisplay.innerText = formatMoney(state.cash);
+            investedDisplay.innerText = formatMoney(state.nav - state.cash);
+
+            // Holdings
+            holdingsCount.innerText = `${state.holdings.length} Stocks`;
+            holdingsGrid.innerHTML = '';
+            
+            state.holdings.forEach(h => {
+                const card = document.createElement('div');
+                card.className = 'holding-card';
+                card.innerHTML = `
+                    <div class="ticker">${h.ticker}</div>
+                    <div class="holding-detail">
+                        <span>Shares:</span>
+                        <span class="val">${h.shares}</span>
+                    </div>
+                    <div class="holding-detail">
+                        <span>Price:</span>
+                        <span class="val">₹${h.price}</span>
+                    </div>
+                    <div class="holding-detail">
+                        <span>Value:</span>
+                        <span class="val">₹${h.value.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="holding-detail">
+                        <span>Weight:</span>
+                        <span class="val">${h.weight}%</span>
+                    </div>
+                    <div class="weight-bar-bg">
+                        <div class="weight-bar-fill" style="width: ${h.weight}%"></div>
+                    </div>
+                `;
+                holdingsGrid.appendChild(card);
+            });
+        }
+
+        document.getElementById('btnPrev').addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderState();
+            }
+        });
+
+        document.getElementById('btnNext').addEventListener('click', () => {
+            if (currentIndex < portfolioData.length - 1) {
+                currentIndex++;
+                renderState();
+            }
+        });
+
+        document.getElementById('btnNextRebal').addEventListener('click', () => {
+            // Find next rebalance day
+            let found = false;
+            for (let i = currentIndex + 1; i < portfolioData.length; i++) {
+                if (portfolioData[i].is_rebalance) {
+                    currentIndex = i;
+                    found = true;
+                    renderState();
+                    break;
+                }
+            }
+            if (!found && currentIndex < portfolioData.length - 1) {
+                currentIndex = portfolioData.length - 1;
+                renderState();
+            }
+        });
+
+        // Start
+        init();
+
+    </script>
+</body>
+</html>

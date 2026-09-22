@@ -1,0 +1,28 @@
+{
+  "portfolio_id": "usa_broad",
+  "label": "USA (INDmoney / Tickertape Broad)",
+  "market": "USA",
+  "currency": "USD",
+  "created_date": "2026-09-22",
+  "last_updated": "2026-09-22",
+  "initial_capital": 10000.0,
+  "cash": 0.0,
+  "proxy_symbol": "BIL",
+  "proxy_units": 109.18423537447198,
+  "proxy_last_price": 91.56999969482422,
+  "proxy_val": 9998.000399920014,
+  "stock_invested": 0.0,
+  "total_equity": 10000.0,
+  "positions": {},
+  "closed_trades": [],
+  "daily_equity_history": [
+    {
+      "date": "2026-09-22",
+      "total_equity": 10000.0,
+      "cash": 0.0,
+      "proxy_val": 10000.0,
+      "stock_val": 0.0,
+      "positions_count": 0
+    }
+  ]
+}

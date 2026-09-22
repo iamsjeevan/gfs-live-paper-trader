@@ -1,0 +1,930 @@
+<USER_REQUEST>
+GFS ADAPTIVE PORTFOLIO — FULL BACKTEST & RESEARCH PROMPT
+
+You are a quantitative research engineer. I already have an existing SQLite-based Indian equity dataset and an already-tested Grandfather–Father–Son (GFS) multi-timeframe RSI strategy.
+
+I now want to test whether GFS can be converted into a complete adaptive portfolio strategy using:
+
+1. GFS entry signals
+2. Momentum-based stock selection
+3. Portfolio position limits
+4. Market-regime-based equity/cash allocation
+5. Sector rotation
+6. Sector diversification/concentration control
+7. Initial stop-loss
+8. EMA21 trailing stop
+9. Realistic transaction costs and slippage
+10. Walk-forward validation
+11. Robustness and anti-overfitting testing
+
+The objective is NOT to assume these additions improve the strategy. Test each component separately and determine whether it genuinely improves out-of-sample performance.
+
+==================================================
+1. FREEZE THE GFS ENTRY SIGNAL
+==================================================
+
+Do NOT modify the original GFS signal.
+
+Grandfather:
+Monthly RSI(14) > 60
+
+Father:
+Weekly RSI(14) > 60
+
+Son:
+Daily RSI(14) crosses above 40.
+
+Exact daily condition:
+
+Previous Daily RSI(14) <= 40
+AND
+Current Daily RSI(14) > 40
+
+Therefore the complete signal is:
+
+Monthly RSI14 > 60
+AND
+Weekly RSI14 > 60
+AND
+Previous Daily RSI14 <= 40
+AND
+Current Daily RSI14 > 40
+
+The signal is generated only after the daily candle has completely closed.
+
+Entry occurs at the next trading day's OPEN.
+
+Monthly and weekly RSI must use COMPLETED candles only.
+
+Never use the current unfinished weekly or monthly candle.
+
+No lookahead bias.
+
+Do not change the RSI thresholds during the main experiment.
+
+==================================================
+2. DATA
+==================================================
+
+Use the existing local SQLite databases first.
+
+Reuse all existing data.
+
+Do NOT redownload data that already exists.
+
+Use existing:
+
+- Daily OHLCV
+- Weekly data
+- Monthly data
+- Security master
+- Existing indicators
+- Existing market/index data
+
+Only download genuinely missing data.
+
+Do not assume yfinance is available.
+
+Prefer the existing local database and existing data pipeline.
+
+Universe:
+
+- Indian listed corporate equities
+- Exclude ETFs
+- Exclude indices
+- Exclude mutual funds
+- Exclude obvious non-equity instruments
+
+Test approximately:
+
+2018 -> latest available date
+
+Document exactly how the universe is constructed.
+
+==================================================
+3. REPRODUCE THE EXISTING GFS BASELINE FIRST
+==================================================
+
+Before adding portfolio intelligence, reproduce the existing GFS baseline from the previous research.
+
+Do not continue if the baseline cannot be approximately reproduced.
+
+Report any meaningful discrepancy.
+
+The baseline should establish:
+
+- Number of GFS signals
+- Number of trades
+- Win rate
+- Mean return
+- Median return
+- Profit factor
+- Holding period
+- Portfolio CAGR
+- Maximum drawdown
+
+This becomes the control group for all later experiments.
+
+==================================================
+4. PORTFOLIO SIZE
+==================================================
+
+Test:
+
+5 positions
+10 positions
+15 positions
+20 positions
+30 positions
+
+Use equal weighting initially.
+
+Example:
+
+₹10,00,000 portfolio
+15 positions
+= approximately ₹66,667 per position
+
+If fewer valid GFS candidates exist than available slots, do NOT force trades.
+
+Keep unused capital in cash.
+
+Do not allow a position to exceed the specified position limit.
+
+==================================================
+5. STOCK SELECTION WHEN THERE ARE TOO MANY GFS SIGNALS
+==================================================
+
+The GFS signal may generate many stocks on the same day.
+
+When more stocks qualify than available portfolio slots, test the following selection methods separately.
+
+A. Neutral selection
+
+Take qualifying signals without using a momentum factor.
+
+B. Weekly RSI ranking
+
+Rank GFS candidates by highest Weekly RSI.
+
+C. Monthly RSI ranking
+
+Rank by highest Monthly RSI.
+
+D. 20-day momentum
+
+Rank by highest 20-day return.
+
+E. 60-day momentum
+
+Rank by highest 60-day return.
+
+F. Relative strength
+
+Rank by stock performance relative to NIFTY over:
+
+- 20 trading days
+- 60 trading days
+
+G. Relative volume
+
+Rank by completed historical relative volume.
+
+H. Composite momentum score
+
+Create a standardized score using:
+
+- Weekly RSI
+- Monthly RSI
+- 20D return
+- 60D return
+- Relative strength
+- Relative volume
+
+Do not assume the composite score is better.
+
+Avoid an enormous parameter search.
+
+==================================================
+6. MARKET REGIME
+==================================================
+
+Now test whether portfolio exposure should depend on the overall Indian market regime.
+
+The idea is:
+
+Strong market -> deploy more capital into GFS positions.
+
+Weak market -> hold more cash.
+
+Use NIFTY 50 as the broad market benchmark.
+
+Create objective market-regime definitions using information available at that point in time.
+
+Start with simple rules.
+
+Example:
+
+BULL:
+NIFTY close > NIFTY 200 EMA
+AND
+NIFTY intermediate trend is positive.
+
+NEUTRAL:
+NIFTY close > 200 EMA
+but intermediate trend is weakening.
+
+BEAR:
+NIFTY close < 200 EMA.
+
+Do not assume these exact definitions are optimal.
+
+Test only a small number of economically sensible regime definitions.
+
+Do NOT perform a huge optimization of EMA periods and thresholds.
+
+==================================================
+7. DYNAMIC EQUITY/CASH ALLOCATION
+==================================================
+
+Test different predefined exposure schedules.
+
+Example 1:
+
+Bull = 100% equity
+Neutral = 70% equity
+Bear = 30% equity
+
+Example 2:
+
+Bull = 100%
+Neutral = 80%
+Bear = 50%
+
+Example 3:
+
+Bull = 100%
+Neutral = 100%
+Bear = 50%
+
+Example 4:
+
+Bull = 100%
+Neutral = 60%
+Bear = 0%
+
+Unused capital remains in cash.
+
+Do not short the market.
+
+Measure whether reducing exposure during weak markets actually improves risk-adjusted performance.
+
+Do not assume that higher CAGR automatically means a better strategy.
+
+==================================================
+8. REGIME TIMING
+==================================================
+
+Avoid lookahead bias.
+
+If the regime uses NIFTY's daily closing price, calculate the regime only after that daily candle closes.
+
+The resulting regime can affect the portfolio starting from the NEXT trading day.
+
+Correct sequence:
+
+NIFTY daily close
+-> calculate market regime
+-> determine allowed equity exposure
+-> next trading day portfolio decisions
+
+Never use information from the future.
+
+==================================================
+9. SECTOR ROTATION
+==================================================
+
+Add sector-level analysis.
+
+Assign each stock to a documented sector classification.
+
+For each sector calculate:
+
+- 20D sector return
+- 60D sector return
+- Relative strength vs NIFTY
+- Number of GFS signals
+- Percentage of sector stocks generating GFS signals
+- Sector momentum
+- Sector breadth
+
+Rank sectors using objective information available at the time.
+
+Test:
+
+A. No sector preference
+
+All GFS stocks are eligible.
+
+B. Sector momentum ranking
+
+Prefer GFS stocks belonging to stronger sectors.
+
+C. Top 2 sectors
+
+Only allow stocks from the strongest 2 sectors.
+
+D. Top 3 sectors
+
+Only allow stocks from the strongest 3 sectors.
+
+E. Top 5 sectors
+
+Only allow stocks from the strongest 5 sectors.
+
+Also test sector concentration limits:
+
+20% maximum portfolio capital per sector
+25% maximum
+33% maximum
+
+Do not optimize all of these simultaneously.
+
+==================================================
+10. BUILD THE STRATEGY PROGRESSIVELY
+==================================================
+
+Do not jump directly to the most complicated model.
+
+Test the following models in order.
+
+MODEL 0 — BASELINE
+
+GFS
+-> equal weight
+-> fixed equity exposure
+-> fixed portfolio capacity
+
+
+MODEL 1 — MOMENTUM
+
+GFS
+-> momentum ranking
+-> equal weight
+-> fixed exposure
+
+
+MODEL 2 — SECTOR
+
+GFS
+-> momentum ranking
+-> sector rotation/diversification
+-> fixed exposure
+
+
+MODEL 3 — MARKET REGIME
+
+GFS
+-> momentum ranking
+-> market-regime-based equity/cash allocation
+
+
+MODEL 4 — FULL ADAPTIVE
+
+GFS
+-> momentum ranking
+-> sector rotation
+-> market regime
+-> dynamic equity/cash allocation
+
+The purpose is to determine the incremental value of every component.
+
+If a component does not improve out-of-sample results, do not keep it simply because it makes the strategy more sophisticated.
+
+==================================================
+11. ENTRY EXECUTION
+==================================================
+
+When a stock qualifies and is selected:
+
+Entry = NEXT trading day's OPEN.
+
+Never enter on the signal day's close.
+
+Record:
+
+- Signal date
+- Signal-day close
+- Entry date
+- Entry open
+- Gap between signal close and entry open
+
+==================================================
+12. INITIAL STOP LOSS
+==================================================
+
+Every position receives an initial:
+
+-5% stop loss from entry.
+
+Do not immediately replace the stop with EMA21.
+
+Test when the EMA21 trailing mechanism becomes active.
+
+Test only these predefined activation levels:
+
++3%
++5%
++7%
++10%
+
+Example:
+
+Entry
+-> initial -5% protection
+-> stock reaches +5%
+-> EMA21 trailing exit becomes active
+-> hold while trend remains above EMA21
+-> exit when completed daily candle closes below EMA21
+
+==================================================
+13. EMA21 TRAILING EXIT
+==================================================
+
+Once the activation threshold is reached:
+
+EMA21 becomes the trailing exit.
+
+Exit when:
+
+Completed daily candle CLOSE < EMA21.
+
+Do NOT exit simply because the intraday low crosses EMA21.
+
+Use completed daily candles.
+
+The strategy therefore becomes:
+
+GFS signal
+-> next-day-open entry
+-> -5% initial stop
+-> reach activation threshold
+-> activate EMA21 trailing exit
+-> exit on daily close below EMA21
+
+==================================================
+14. STOP-LOSS GAP HANDLING
+==================================================
+
+Use realistic execution.
+
+If:
+
+Today's open < stop price
+
+then the exit occurs at the actual available opening price.
+
+Do NOT assume the position can magically exit exactly at the stop price.
+
+Record:
+
+- Stop price
+- Actual exit price
+- Gap loss
+- Slippage
+
+==================================================
+15. POSITION REPLACEMENT
+==================================================
+
+When a position exits:
+
+- Free the portfolio slot.
+- Allow new valid GFS signals to fill the slot.
+- Do not immediately reopen the same stock unless it generates a new valid GFS signal.
+- Never hold duplicate positions in the same stock.
+
+Document same-day exit/entry handling.
+
+==================================================
+16. PORTFOLIO REBALANCING
+==================================================
+
+Do not continuously rebalance existing positions.
+
+Initial implementation:
+
+Allocate capital when a new position is opened.
+
+Do not sell an existing position simply because another stock ranks higher.
+
+Later test:
+
+A. No rebalancing
+B. Monthly rebalancing
+C. Rebalancing after major regime changes
+
+Measure:
+
+- Turnover
+- Transaction costs
+- CAGR
+- Drawdown
+- OOS performance
+
+==================================================
+17. TRANSACTION COSTS
+==================================================
+
+Test:
+
+0 bps round trip
+25 bps round trip
+50 bps round trip
+100 bps round trip
+150 bps round trip
+
+Also include realistic slippage assumptions.
+
+Report both:
+
+Gross performance
+Net performance after costs
+
+Do not judge the strategy using gross returns alone.
+
+==================================================
+18. PORTFOLIO METRICS
+==================================================
+
+For every model calculate:
+
+RETURNS:
+
+- CAGR
+- Total return
+- Annual returns
+- Monthly returns
+
+RISK:
+
+- Maximum drawdown
+- Average drawdown
+- Drawdown duration
+- Worst day
+- Worst month
+- Worst year
+
+TRADING:
+
+- Number of trades
+- Win rate
+- Average trade
+- Median trade
+- Profit factor
+- Average winner
+- Average loser
+- Expectancy
+- Average holding period
+- Turnover
+
+PORTFOLIO:
+
+- Average equity exposure
+- Average cash allocation
+- Maximum simultaneous positions
+- Average number of positions
+- Maximum single-stock allocation
+- Maximum sector allocation
+
+==================================================
+19. MULTIBAGGER ANALYSIS
+==================================================
+
+This is extremely important.
+
+Measure winners above:
+
++25%
++50%
++100%
++200%
++300%
+
+Determine whether the EMA21 trailing mechanism allows large winners to continue running.
+
+Compare:
+
+Fixed 20-day exit
+Fixed 40-day exit
+Fixed 60-day exit
+GFS -5% -> EMA21
+
+Determine whether adaptive exits improve risk control while preserving large winners.
+
+==================================================
+20. MARKET REGIME ANALYSIS
+==================================================
+
+Break performance into:
+
+Bull
+Bear
+Sideways
+
+For each regime report:
+
+- Number of trades
+- Win rate
+- Average return
+- Median return
+- Profit factor
+- CAGR
+- Maximum drawdown
+- Equity exposure
+- Cash exposure
+
+Also determine whether dynamic cash allocation actually reduces drawdown.
+
+==================================================
+21. SECTOR ANALYSIS
+==================================================
+
+For every sector report:
+
+- Number of GFS signals
+- Number of trades
+- Win rate
+- Average return
+- Median return
+- Profit factor
+- Contribution to portfolio return
+- Maximum drawdown
+
+Determine whether portfolio performance is excessively dependent on a small number of sectors.
+
+==================================================
+22. WALK-FORWARD TESTING
+==================================================
+
+This is mandatory.
+
+Do NOT optimize the entire 2018-latest period and call the strategy robust.
+
+Use chronological walk-forward testing.
+
+Suggested structure:
+
+Train: 2018-2020
+Test: 2021
+
+Train: 2018-2021
+Test: 2022
+
+Train: 2018-2022
+Test: 2023
+
+Train: 2018-2023
+Test: 2024
+
+Train: 2018-2024
+Test: 2025
+
+Train: 2018-2025
+Test: 2026
+
+Any model/ranking/regime/sector choice must be frozen before its OOS period.
+
+Clearly report:
+
+In-Sample performance
+Out-of-Sample performance
+
+Do not select the final strategy after seeing all OOS results.
+
+==================================================
+23. ABLATION STUDY
+==================================================
+
+Measure the incremental value of each component.
+
+Test:
+
+1. GFS
+
+2. GFS + Momentum
+
+3. GFS + Market Regime
+
+4. GFS + Sector Rotation
+
+5. GFS + Momentum + Market Regime
+
+6. GFS + Momentum + Sector Rotation
+
+7. GFS + Momentum + Sector Rotation + Market Regime
+
+For each addition calculate:
+
+- Change in CAGR
+- Change in maximum drawdown
+- Change in profit factor
+- Change in win rate
+- Change in average trade
+- Change in turnover
+- Change in average equity exposure
+- Change in OOS performance
+
+The goal is to determine which components genuinely add value.
+
+==================================================
+24. ANTI-OVERFITTING RULES
+==================================================
+
+Do not perform unlimited optimization.
+
+Do not brute-force thousands of combinations of:
+
+- RSI thresholds
+- EMA periods
+- Stop losses
+- Momentum lookbacks
+- Sector limits
+- Regime thresholds
+- Portfolio sizes
+- Activation thresholds
+
+Use only a small number of economically motivated predefined alternatives.
+
+Maintain an experiment log.
+
+Record failed experiments as well as successful ones.
+
+Clearly distinguish:
+
+PREDEFINED RULES
+
+from:
+
+RULES SELECTED AFTER OBSERVING HISTORICAL RESULTS.
+
+Do not call a parameter robust merely because it produced the highest historical CAGR.
+
+==================================================
+25. BENCHMARKS
+==================================================
+
+Compare the final strategies against:
+
+Benchmark 1:
+NIFTY 50 buy-and-hold
+
+Benchmark 2:
+Original GFS equal-weight baseline
+
+Benchmark 3:
+GFS + -5% initial stop + EMA21 trailing exit
+
+Benchmark 4:
+Adaptive GFS portfolio
+
+The adaptive strategy should not be judged solely by CAGR.
+
+Evaluate:
+
+- CAGR
+- Maximum drawdown
+- Profit factor
+- Volatility
+- Turnover
+- Exposure
+- Cash usage
+- OOS stability
+- Multibagger retention
+- Complexity
+
+==================================================
+26. MONTE CARLO
+==================================================
+
+For shortlisted strategies perform at least:
+
+5,000 Monte Carlo simulations.
+
+Estimate:
+
+- Ending capital distribution
+- CAGR distribution
+- Maximum drawdown distribution
+- Losing streaks
+- Worst 10-trade sequence
+- Worst 20-trade sequence
+
+Clearly explain that Monte Carlo results are simulations and not guarantees of future performance.
+
+==================================================
+27. FINAL COMPARISON TABLE
+==================================================
+
+Produce a table similar to:
+
+Strategy | CAGR | Max DD | PF | Win % | Avg Trade | Exposure | Turnover
+
+Include:
+
+GFS baseline
+GFS + Momentum
+GFS + Regime
+GFS + Sector
+GFS + Momentum + Regime
+GFS + Momentum + Sector
+GFS + Momentum + Sector + Regime
+
+Show results for:
+
+Gross
+25 bps
+50 bps
+100 bps
+
+==================================================
+28. FINAL RESEARCH CONCLUSION
+==================================================
+
+Do NOT simply choose the strategy with the highest CAGR.
+
+Determine:
+
+1. Does GFS itself have a robust edge?
+
+2. Does momentum selection improve GFS?
+
+3. Does market-regime-based cash allocation reduce drawdown?
+
+4. Does sector rotation improve results?
+
+5. Does sector diversification reduce concentration risk?
+
+6. Does -5% initial protection work with GFS?
+
+7. Does EMA21 trailing preserve large winners?
+
+8. Which components survive walk-forward OOS testing?
+
+9. Does the adaptive portfolio outperform the simple GFS baseline after realistic costs?
+
+10. Is the additional complexity justified by measurable improvement?
+
+Clearly identify:
+
+- What worked
+- What did not work
+- What worked only in-sample
+- What survived OOS
+- What is fragile
+- What appears robust
+- What still requires paper/shadow testing
+
+Do not claim future profitability.
+
+==================================================
+29. REQUIRED OUTPUT
+==================================================
+
+Produce a complete research report containing:
+
+1. Executive summary
+2. Dataset description
+3. GFS signal validation
+4. Baseline reproduction
+5. Portfolio construction results
+6. Momentum ranking results
+7. Market regime results
+8. Dynamic cash allocation results
+9. Sector rotation results
+10. Sector concentration results
+11. Exit strategy comparison
+12. -5% stop analysis
+13. EMA21 trailing analysis
+14. Combined adaptive strategy results
+15. Ablation study
+16. Transaction-cost sensitivity
+17. Market-regime analysis
+18. Sector analysis
+19. Multibagger analysis
+20. Walk-forward OOS results
+21. Monte Carlo analysis
+22. Failure cases
+23. Overfitting assessment
+24. Final comparison table
+25. Research conclusion
+
+Most importantly:
+
+Do not optimize for the prettiest backtest.
+
+The goal is to discover whether a GFS-based adaptive portfolio system can produce a robust, repeatable edge after costs, drawdowns, regime changes, sector changes, and out-of-sample testing.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-21T00:52:17+05:30.
+</ADDITIONAL_METADATA>
