@@ -4,25 +4,25 @@
   "market": "INDIA",
   "currency": "INR",
   "created_date": "2026-09-22",
-  "last_updated": "2026-09-23",
+  "last_updated": "2026-09-24",
   "initial_capital": 100000.0,
   "cash": 0.0,
   "proxy_symbol": "GOLDBEES.NS",
   "proxy_units": 720.1801536601831,
-  "proxy_last_price": NaN,
-  "proxy_val": NaN,
-  "stock_invested": 10583.494143969156,
-  "total_equity": NaN,
+  "proxy_last_price": 123.43000030517578,
+  "proxy_val": 88891.83658605795,
+  "stock_invested": 10291.70822906825,
+  "total_equity": 99183.5448151262,
   "positions": {
     "CUPID.NS": {
       "symbol": "CUPID.NS",
       "entry_date": "2026-09-22",
       "sim_entry_price": 258.8455122375488,
       "shares": 38.64704731818988,
-      "last_price": 273.8500061035156,
-      "holding_days": 3,
-      "unrealized_pnl": 579.8793844235096,
-      "unrealized_return_pct": 5.796698477119755,
+      "last_price": 266.29998779296875,
+      "holding_days": 4,
+      "unrealized_pnl": 288.09346952260444,
+      "unrealized_return_pct": 2.8798936829079707,
       "pending_exit": false
     }
   },
@@ -74,6 +74,14 @@
       "cash": 0.0,
       "proxy_val": NaN,
       "stock_val": 10583.494143969156,
+      "positions_count": 1
+    },
+    {
+      "date": "2026-09-24",
+      "total_equity": 99183.5448151262,
+      "cash": 0.0,
+      "proxy_val": 88891.83658605795,
+      "stock_val": 10291.70822906825,
       "positions_count": 1
     }
   ]
