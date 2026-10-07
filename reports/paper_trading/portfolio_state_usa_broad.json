@@ -4,15 +4,15 @@
   "market": "USA",
   "currency": "USD",
   "created_date": "2026-09-22",
-  "last_updated": "2026-10-06",
+  "last_updated": "2026-10-07",
   "initial_capital": 10000.0,
   "cash": 0.0,
   "proxy_symbol": "GLD",
   "proxy_units": 25.09664209392494,
-  "proxy_last_price": 381.34100341796875,
-  "proxy_val": 9570.37867851897,
+  "proxy_last_price": 382.2699890136719,
+  "proxy_val": 9593.693097524743,
   "stock_invested": 0,
-  "total_equity": 9570.37867851897,
+  "total_equity": 9593.693097524743,
   "positions": {},
   "closed_trades": [],
   "daily_equity_history": [
@@ -197,6 +197,14 @@
       "total_equity": 9570.37867851897,
       "cash": 0.0,
       "proxy_val": 9570.37867851897,
+      "stock_val": 0,
+      "positions_count": 0
+    },
+    {
+      "date": "2026-10-07",
+      "total_equity": 9593.693097524743,
+      "cash": 0.0,
+      "proxy_val": 9593.693097524743,
       "stock_val": 0,
       "positions_count": 0
     }
