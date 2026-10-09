@@ -4,7 +4,7 @@
   "market": "USA",
   "currency": "USD",
   "created_date": "2026-09-22",
-  "last_updated": "2026-10-08",
+  "last_updated": "2026-10-09",
   "initial_capital": 10000.0,
   "cash": 0.0,
   "proxy_symbol": "GLD",
@@ -226,6 +226,14 @@
     },
     {
       "date": "2026-10-08",
+      "total_equity": 9502.090507059664,
+      "cash": 0.0,
+      "proxy_val": 9502.090507059664,
+      "stock_val": 0,
+      "positions_count": 0
+    },
+    {
+      "date": "2026-10-09",
       "total_equity": 9502.090507059664,
       "cash": 0.0,
       "proxy_val": 9502.090507059664,
