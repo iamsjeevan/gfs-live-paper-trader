@@ -4,7 +4,7 @@
   "market": "INDIA",
   "currency": "INR",
   "created_date": "2026-09-22",
-  "last_updated": "2026-10-12",
+  "last_updated": "2026-10-13",
   "initial_capital": 100000.0,
   "cash": 0.0,
   "proxy_symbol": "GOLDBEES.NS",
@@ -20,7 +20,7 @@
       "sim_entry_price": 258.8455122375488,
       "shares": 38.64704731818988,
       "last_price": NaN,
-      "holding_days": 28,
+      "holding_days": 29,
       "unrealized_pnl": NaN,
       "unrealized_return_pct": NaN,
       "pending_exit": false
@@ -270,6 +270,14 @@
     },
     {
       "date": "2026-10-12",
+      "total_equity": NaN,
+      "cash": 0.0,
+      "proxy_val": NaN,
+      "stock_val": NaN,
+      "positions_count": 1
+    },
+    {
+      "date": "2026-10-13",
       "total_equity": NaN,
       "cash": 0.0,
       "proxy_val": NaN,
