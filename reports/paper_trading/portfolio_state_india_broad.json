@@ -9,20 +9,20 @@
   "cash": 0.0,
   "proxy_symbol": "GOLDBEES.NS",
   "proxy_units": 720.1801536601831,
-  "proxy_last_price": NaN,
-  "proxy_val": NaN,
-  "stock_invested": 13646.272643935703,
-  "total_equity": NaN,
+  "proxy_last_price": 119.72000122070312,
+  "proxy_val": 86219.96887532329,
+  "stock_invested": 13704.243214912987,
+  "total_equity": 99924.21209023628,
   "positions": {
     "CUPID.NS": {
       "symbol": "CUPID.NS",
       "entry_date": "2026-09-22",
       "sim_entry_price": 258.8455122375488,
       "shares": 38.64704731818988,
-      "last_price": 353.1000061035156,
-      "holding_days": 31,
-      "unrealized_pnl": 3642.6578843900575,
-      "unrealized_return_pct": 36.4134162694956,
+      "last_price": 354.6000061035156,
+      "holding_days": 32,
+      "unrealized_pnl": 3700.628455367342,
+      "unrealized_return_pct": 36.99291250531344,
       "pending_exit": false
     }
   },
@@ -298,6 +298,14 @@
       "cash": 0.0,
       "proxy_val": NaN,
       "stock_val": 13646.272643935703,
+      "positions_count": 1
+    },
+    {
+      "date": "2026-10-14",
+      "total_equity": 99924.21209023628,
+      "cash": 0.0,
+      "proxy_val": 86219.96887532329,
+      "stock_val": 13704.243214912987,
       "positions_count": 1
     }
   ]
