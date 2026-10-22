@@ -10,7 +10,7 @@
   "positions": {},
   "total_interest_paid": 0.0,
   "current_regime": "BEAR",
-  "last_updated": "2026-10-22 15:19:32 IST",
-  "last_mode": "INTRADAY (Idle)",
-  "gold_price": 117.37000274658203
+  "last_updated": "2026-10-22 15:25:09 IST",
+  "last_mode": "EOD (Rebalanced)",
+  "gold_price": 117.3499984741211
 }

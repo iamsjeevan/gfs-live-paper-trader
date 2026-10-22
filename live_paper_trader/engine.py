@@ -51,6 +51,7 @@ from live_paper_trader.signals import (
     get_intraday_quotes,
     scan_universe_for_setups
 )
+from live_paper_trader.notifier import PaperTradingNotifier
 
 logger = logging.getLogger("live_paper_trader.engine")
 
@@ -61,6 +62,7 @@ class PaperTradingEngine:
         self.states: Dict[str, Dict[str, Any]] = {}
         self.trades: Dict[str, List[Dict[str, Any]]] = {}
         self.equity_histories: Dict[str, List[Dict[str, Any]]] = {}
+        self.notifier = PaperTradingNotifier()
 
         for p_id, p_cfg in self.portfolios.items():
             self.states[p_id] = self.load_portfolio_state(p_id, p_cfg)
@@ -248,6 +250,17 @@ class PaperTradingEngine:
                     }
                     self.trades[p_id].append(trade_rec)
                     to_exit.append(sym)
+                    self.notifier.send_trade_alert(
+                        market="INDIA",
+                        action="SELL",
+                        symbol=sym,
+                        price=fill_px,
+                        shares=p["units"],
+                        value=net,
+                        ret_pct=ret_pct,
+                        pnl=pnl,
+                        reason="Emergency GTT Circuit Guard (-12%)"
+                    )
 
             for sym in to_exit:
                 del positions[sym]
@@ -362,6 +375,17 @@ class PaperTradingEngine:
                     }
                     self.trades[p_id].append(trade_rec)
                     to_exit.append(sym)
+                    self.notifier.send_trade_alert(
+                        market="INDIA",
+                        action="SELL",
+                        symbol=sym,
+                        price=fill_px,
+                        shares=p["units"],
+                        value=net,
+                        ret_pct=ret_pct,
+                        pnl=pnl,
+                        reason="Emergency GTT Circuit Guard (-12%)"
+                    )
                     logger.info(f"[{st['portfolio_name']}] Exited {sym} @ ₹{fill_px:.2f} ({exit_type}) | Net: ₹{pnl:+,.2f} ({ret_pct:+.2f}%)")
 
             for sym in to_exit:
@@ -446,6 +470,15 @@ class PaperTradingEngine:
                                 "unrealized_pct": 0.0
                             }
                             logger.info(f"[{st['portfolio_name']}] ENTERED {cand['symbol']} @ ₹{fill_px:.2f} ({units} shares, ₹{actual_cost:,.2f}) [{tier_str}]")
+                            self.notifier.send_trade_alert(
+                                market="INDIA",
+                                action="BUY",
+                                symbol=cand["symbol"],
+                                price=fill_px,
+                                shares=units,
+                                value=actual_cost,
+                                reason=f"{st['portfolio_name']} • {tier_str}"
+                            )
 
         # 5. Record Equity History and Save All States
         for p_id, st in self.states.items():
@@ -485,6 +518,29 @@ class PaperTradingEngine:
         self.save_json(EQUITY_FILE, self.equity_histories["tiered_7_1_5x"])
 
         self.generate_dashboard_html()
+
+        # Send daily EOD scorecard email across all 4 portfolios
+        summary_payload = {}
+        for p_id, p_cfg in self.portfolios.items():
+            st = self.states[p_id]
+            nav = self.calculate_portfolio_equity(p_id)
+            init_cap = p_cfg.get("initial_capital", INITIAL_CAPITAL)
+            pnl = nav - init_cap
+            summary_payload[p_id] = {
+                "name": p_cfg["name"],
+                "color": p_cfg["color"],
+                "slots": p_cfg["slots"],
+                "nav": nav,
+                "pnl": pnl,
+                "ret_pct": (nav / init_cap - 1.0) * 100.0,
+                "positions_count": len(st.get("positions", {})),
+                "cash": st.get("cash", 0.0),
+                "debt": st.get("borrowed_debt", 0.0),
+                "gold_units": st.get("gold_units", 0),
+                "gold_val": st.get("gold_units", 0) * st.get("gold_price", 117.30)
+            }
+        self.notifier.send_eod_multi_portfolio_summary(summary_payload, regime_info)
+
         logger.info("EOD screening & rebalance complete across all 4 portfolios.")
 
     def load_universe(self) -> List[str]:

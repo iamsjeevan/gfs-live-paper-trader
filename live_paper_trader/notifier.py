@@ -276,3 +276,75 @@ class PaperTradingNotifier:
 
         self._send_email(subject=subject, html_body=html_body, text_body=plain_text)
         self._send_telegram(f"📊 *{market.upper()} Monthly Report*\nEquity: {curr}{total_equity:,.0f} ({tot_ret_pct:+.2f}%)\nActive Slots: {len(positions)}/10")
+
+    def send_eod_multi_portfolio_summary(
+        self,
+        portfolios_data: Dict[str, Any],
+        regime_info: Dict[str, Any]
+    ):
+        """Sends daily 4:00 PM IST summary email comparing all 4 portfolios."""
+        date_str = datetime.now().strftime("%d %b %Y")
+        regime = regime_info.get("regime", "BULL")
+        nifty_close = regime_info.get("close", 0.0)
+        
+        subject = f"📊 Daily Forward-Test Scorecard ({date_str}) • Regime: {regime}"
+
+        rows_html = ""
+        plain_lines = [f"=== DAILY FORWARD TEST SCORECARD ({date_str}) ===", f"Market Regime: {regime} (Nifty: ₹{nifty_close:,.1f})\n"]
+
+        for p_id, p in portfolios_data.items():
+            pnl_sign = "+" if p["pnl"] >= 0 else ""
+            pnl_color = "#2e7d32" if p["pnl"] >= 0 else "#c62828"
+            
+            rows_html += f"""
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px; font-weight: bold; color: {p.get('color', '#38bdf8')};">{p['name']}</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold;">₹ {p['nav']:,.2f}</td>
+                <td style="padding: 10px; text-align: right; color: {pnl_color}; font-weight: bold;">{pnl_sign}₹ {p['pnl']:,.2f} ({pnl_sign}{p['ret_pct']:.2f}%)</td>
+                <td style="padding: 10px; text-align: center;">{p['positions_count']} / {p['slots']}</td>
+                <td style="padding: 10px; text-align: right; font-size: 11px;">₹ {p['cash']:,.0f} {f"(+ ₹ {p['gold_val']:,.0f} Gold)" if p.get('gold_units', 0) > 0 else f"(-₹ {p['debt']:,.0f} MTF)"}</td>
+            </tr>
+            """
+            plain_lines.append(f"{p['name']}: NAV ₹ {p['nav']:,.2f} | Net: {pnl_sign}{p['ret_pct']:.2f}% | Positions: {p['positions_count']}/{p['slots']}")
+
+        html_body = f"""
+        <html>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 1.5; color: #222; max-width: 680px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #0b1329; color: white; padding: 20px; border-radius: 8px 8px 0 0; border-bottom: 3px solid #38bdf8;">
+                <h2 style="margin: 0; font-size: 20px;">🚀 Indian Equities Swing Forward Test</h2>
+                <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Daily Close Summary • {date_str} • 4 Portfolios Tracked</div>
+            </div>
+
+            <div style="padding: 20px; background-color: #f8fafc; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px;">
+                    <strong>Market Regime:</strong> <span style="color: {'#2e7d32' if regime == 'BULL' else '#c62828'}; font-weight: bold;">{regime}</span>
+                    <span style="color: #64748b; font-size: 12px; margin-left: 10px;">(Nifty 50: ₹ {nifty_close:,.1f} | {'Long Active' if regime == 'BULL' else 'Capital Hedged in GOLDBEES'})</span>
+                </div>
+
+                <h3 style="font-size: 14px; text-transform: uppercase; color: #475569; margin-bottom: 10px;">Portfolio Leaderboard (Started at ₹ 1,00,000 each)</h3>
+                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden; font-size: 13px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <thead style="background: #e2e8f0; text-align: left; font-size: 11px; text-transform: uppercase; color: #475569;">
+                        <tr>
+                            <th style="padding: 10px;">Architecture</th>
+                            <th style="padding: 10px; text-align: right;">NAV</th>
+                            <th style="padding: 10px; text-align: right;">Net Return</th>
+                            <th style="padding: 10px; text-align: center;">Positions</th>
+                            <th style="padding: 10px; text-align: right;">Allocation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows_html}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="background-color: #0b1329; color: #94a3b8; padding: 14px; text-align: center; font-size: 11px; border-radius: 0 0 8px 8px;">
+                Autonomous Forward Testing Engine • Dual-Stop (-12% GTT / 21 EMA) Architecture<br>
+                Real orders disabled. Track live charts on your Vercel Dashboard.
+            </div>
+        </body>
+        </html>
+        """
+
+        self._send_email(subject=subject, html_body=html_body, text_body="\\n".join(plain_lines))
+        self._send_telegram(f"*{subject}*\\n\\n" + "\\n".join(plain_lines))
