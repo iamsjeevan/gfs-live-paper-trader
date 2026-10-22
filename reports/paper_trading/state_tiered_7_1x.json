@@ -1,0 +1,16 @@
+{
+  "portfolio_id": "tiered_7_1x",
+  "portfolio_name": "Tiered 7-Slot (1.0x Pure Cash)",
+  "leverage": 1.0,
+  "slots": 7,
+  "initial_capital": 100000.0,
+  "cash": 103.74983732223336,
+  "borrowed_debt": 0.0,
+  "gold_units": 849,
+  "positions": {},
+  "total_interest_paid": 0.0,
+  "current_regime": "BEAR",
+  "last_updated": "2026-10-22 15:19:32 IST",
+  "last_mode": "INTRADAY (Idle)",
+  "gold_price": 117.37000274658203
+}

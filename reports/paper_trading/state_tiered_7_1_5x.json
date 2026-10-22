@@ -1,0 +1,12 @@
+{
+  "initial_capital": 100000.0,
+  "cash": 294.9974060058594,
+  "borrowed_debt": 0.0,
+  "gold_units": 850,
+  "positions": {},
+  "total_interest_paid": 0.0,
+  "current_regime": "BEAR",
+  "last_updated": "2026-10-22 15:19:32 IST",
+  "last_mode": "INTRADAY (Idle)",
+  "gold_price": 117.37000274658203
+}

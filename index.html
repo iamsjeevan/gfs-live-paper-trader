@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Swing Momentum Forward Test • NSE Smallcaps</title>
+  <title>Live Swing Momentum Forward Test • 4 Portfolios</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -17,18 +17,30 @@
       --red: #ef4444;
       --red-bg: rgba(239, 68, 68, 0.12);
       --accent: #38bdf8;
-      --orange: #f97316;
       --gold: #f59e0b;
+      --purple: #a855f7;
+      --orange: #f97316;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text-main); padding: 24px; line-height: 1.5; }
-    .container { max-width: 1400px; margin: 0 auto; }
+    .container { max-width: 1440px; margin: 0 auto; }
     
-    .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); margin-bottom: 24px; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
     .title-box h1 { font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
     .badge { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
     .subtext { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
 
+    /* Portfolio Tabs */
+    .portfolio-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .tab-card { background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s ease; position: relative; }
+    .tab-card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+    .tab-card.active { border-color: var(--accent); background: #162035; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.15); }
+    .tab-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; display: inline-block; margin-bottom: 6px; }
+    .tab-name { font-size: 14px; font-weight: 700; color: #fff; }
+    .tab-nav { font-size: 22px; font-weight: 800; margin-top: 6px; }
+    .tab-ret { font-size: 12px; font-weight: 600; margin-top: 2px; }
+
+    /* KPIs */
     .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .kpi-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 18px; }
     .kpi-lbl { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
@@ -48,60 +60,78 @@
     .tier-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #1e293b; color: #94a3b8; font-weight: 600; }
     .tier-t1 { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
 
-    .chart-box { height: 320px; padding: 20px; }
+    .chart-box { height: 340px; padding: 20px; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <div class="title-box">
-        <h1>Autonomous Forward Testing Engine <span class="badge">LIVE SYSTEM</span></h1>
-        <div class="subtext">Stage 2 Momentum + Dual-Stop Architecture (1.5x Leverage • NSE Smallcaps) | Mode: <strong>EOD (Rebalanced)</strong></div>
+        <h1>Autonomous Forward Testing Engine <span class="badge">4 PORTFOLIOS LIVE</span></h1>
+        <div class="subtext">Stage 2 Momentum + Dual-Stop Architecture • Real-Time Forward Testing across 1.0x, 1.5x & 2.0x Leverage</div>
       </div>
       <div style="text-align: right;">
-        <div style="font-size: 13px; font-weight: 600; color: var(--accent);">Last Update: 2026-10-22 14:47:40 IST</div>
+        <div style="font-size: 13px; font-weight: 600; color: var(--accent);">Last Update: 2026-10-22 15:19:32 IST</div>
         <div style="font-size: 11px; color: var(--text-muted);">Auto-deployed via Vercel & GitHub Actions</div>
       </div>
     </div>
 
-    <!-- KPIs -->
+    <!-- 4 Portfolio Selector Cards -->
+    <div class="portfolio-tabs" id="tabsContainer"></div>
+
+    <!-- Active Portfolio Header Banner -->
+    <div style="background: #111a2e; border: 1px solid #1e293b; border-radius: 10px; padding: 14px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <span id="activeBadge" class="tab-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">👑 1.5x MTF Champion</span>
+        <strong id="activeTitle" style="font-size: 16px; margin-left: 8px;">Tiered 7-Slot (1.5x MTF Champion)</strong>
+        <div id="activeDesc" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Optimal Kelly Growth • Sharpe 1.14 • ₹2.88 Cr 17.7Y Backtest</div>
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted);">
+        Slot Capacity: <strong id="activeSlots" style="color: #fff;">7 Stocks</strong> | Leverage: <strong id="activeLev" style="color: #fff;">1.5x MTF</strong>
+      </div>
+    </div>
+
+    <!-- Dynamic KPIs -->
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-lbl">Current Portfolio Equity</div>
-        <div class="kpi-val accent">₹ 100,000.00</div>
+        <div class="kpi-val accent" id="kpiNav">₹ 100,000.00</div>
         <div class="kpi-sub">Started at ₹ 100,000</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-lbl">Total Net Return</div>
-        <div class="kpi-val green">+₹ 0.00 (+0.00%)</div>
+        <div class="kpi-val green" id="kpiPnl">+₹ 0.00 (+0.00%)</div>
         <div class="kpi-sub">After all fees & margin interest</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-lbl">Market Regime Filter</div>
-        <div class="kpi-val red">BEAR</div>
-        <div class="kpi-sub">Nifty 50 < 200 EMA (Capital in Gold)</div>
+        <div class="kpi-val" id="kpiRegime">BEAR</div>
+        <div class="kpi-sub" id="kpiRegimeSub">Nifty 50 < 200 EMA (Capital in Gold)</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-lbl">Active Positions & WR</div>
-        <div class="kpi-val accent">0 / 10 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">| 0.0% WR</span></div>
-        <div class="kpi-sub">0 Closed Trades</div>
+        <div class="kpi-val accent" id="kpiPosCount">0 / 7 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">| 0.0% WR</span></div>
+        <div class="kpi-sub" id="kpiTradesCount">0 Closed Trades</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-lbl">Cash & Capital Allocation</div>
-        <div class="kpi-val" style="font-size: 18px; margin-top: 8px;">₹ 295 <span style="font-size: 12px; color: var(--gold);">(+ ₹ 99,705 Gold)</span></div>
-        <div class="kpi-sub">Debt: ₹ 0 | Margin Paid: ₹ 0.00</div>
+        <div class="kpi-lbl">Cash & Allocation</div>
+        <div class="kpi-val" id="kpiCash" style="font-size: 18px; margin-top: 8px;">₹ 295</div>
+        <div class="kpi-sub" id="kpiDebt">Debt: ₹ 0 | Margin Paid: ₹ 0.00</div>
       </div>
     </div>
 
-    <!-- Equity Curve -->
-    <div class="section-title">Forward-Test Equity Curve</div>
+    <!-- Comparative Equity Curve -->
+    <div class="section-title">
+      Comparative Forward-Test Equity Curves
+      <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">All 4 Portfolios Tracked Side-by-Side</span>
+    </div>
     <div class="card chart-box">
       <canvas id="equityChart"></canvas>
     </div>
 
-    <!-- Open Positions -->
+    <!-- Active Open Positions -->
     <div class="section-title">
-      Active Open Positions (1)
+      Active Open Positions (<span id="tablePosCount">0</span>)
       <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">Guarded by -12% Intraday GTT & 21 EMA Trailing Stop</span>
     </div>
     <div class="card">
@@ -120,26 +150,14 @@
             <th>Unrealized P&L</th>
           </tr>
         </thead>
-        <tbody>
-          
-          <tr style="background: rgba(245, 158, 11, 0.05);">
-            <td class="symbol-cell"><span style="color: var(--gold); font-size: 16px;">🛡️</span> GOLDBEES.NS <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid #f59e0b; font-size: 10px;">DEFENSIVE HEDGE</span></td>
-            <td><span class="tier-badge" style="color: #fbbf24; background: rgba(245, 158, 11, 0.1);">100% Capital Hedge</span></td>
-            <td>2026-10-22</td>
-            <td>₹ 117.30</td>
-            <td><strong>₹ 117.30</strong></td>
-            <td>850</td>
-            <td>₹ 99,705.00</td>
-            <td style="color: var(--text-muted); font-size: 11px;">Macro Regime Exit</td>
-            <td style="color: var(--text-muted); font-size: 11px;">N/A (Liquid ETF)</td>
-            <td class="green" style="font-weight: 700;">₹ 0.00 (+0.00%)</td>
-          </tr>
-        </tbody>
+        <tbody id="openPositionsBody"></tbody>
       </table>
     </div>
 
     <!-- Closed Trades -->
-    <div class="section-title">Closed Trade History (0)</div>
+    <div class="section-title">
+      Closed Trade History (<span id="tableTradesCount">0</span>)
+    </div>
     <div class="card">
       <table>
         <thead>
@@ -155,39 +173,186 @@
             <th>Exit Mechanism</th>
           </tr>
         </thead>
-        <tbody>
-          <tr><td colspan="9" style="text-align:center; padding: 20px; color: var(--text-muted);">No closed trades yet in forward-test sequence.</td></tr>
-        </tbody>
+        <tbody id="closedTradesBody"></tbody>
       </table>
     </div>
   </div>
 
   <script>
-    const eqData = [{"date": "2026-10-22", "equity": 100000.0, "cash": 295.0, "stock_value": 0, "debt": 0.0}];
-    const ctx = document.getElementById('equityChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: eqData.map(x => x.date),
-        datasets: [{
-          label: 'Portfolio Equity (₹)',
-          data: eqData.map(x => x.equity),
-          borderColor: '#38bdf8',
-          backgroundColor: 'rgba(56, 189, 248, 0.08)',
-          borderWidth: 2.5,
-          fill: true,
-          tension: 0.1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
-          y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }
-        }
+    const P_DATA = {"tiered_7_1_5x": {"id": "tiered_7_1_5x", "name": "Tiered 7-Slot (1.5x MTF Champion)", "short_name": "1.5x Champion", "badge": "\ud83d\udc51 1.5x MTF Champion", "description": "Optimal Kelly Growth \u2022 Sharpe 1.14 \u2022 \u20b92.88 Cr 17.7Y Backtest", "color": "#38bdf8", "slots": 7, "leverage": 1.5, "initial_capital": 100000.0, "nav": 100059.5, "pnl": 59.5, "ret_pct": 0.06, "cash": 295.0, "debt": 0.0, "interest_paid": 0.0, "gold_units": 850, "gold_price": 117.37, "gold_val": 99764.5, "regime": "BEAR", "positions_count": 0, "trades_count": 0, "win_rate": 0.0, "equity_history": [{"date": "2026-10-22", "equity": 100059.5, "cash": 295.0, "stock_value": 0, "gold_value": 99764.5, "debt": 0.0}], "positions": [], "trades": []}, "tiered_7_1x": {"id": "tiered_7_1x", "name": "Tiered 7-Slot (1.0x Pure Cash)", "short_name": "1.0x Cash", "badge": "\ud83d\udee1\ufe0f 1.0x Pure Cash", "description": "Zero Margin Debt \u2022 Pure Cash \u2022 Lowest Career Drawdown", "color": "#34d399", "slots": 7, "leverage": 1.0, "initial_capital": 100000.0, "nav": 99750.88, "pnl": -249.12, "ret_pct": -0.25, "cash": 103.75, "debt": 0.0, "interest_paid": 0.0, "gold_units": 849, "gold_price": 117.37, "gold_val": 99647.13, "regime": "BEAR", "positions_count": 0, "trades_count": 0, "win_rate": 0.0, "equity_history": [{"date": "2026-10-22", "equity": 99750.88, "cash": 103.75, "stock_value": 0, "gold_value": 99647.13, "debt": 0.0}], "positions": [], "trades": []}, "tiered_7_2x": {"id": "tiered_7_2x", "name": "Tiered 7-Slot (2.0x MTF Alpha)", "short_name": "2.0x Alpha", "badge": "\ud83d\ude80 2.0x MTF Alpha", "description": "Maximum Purchasing Power \u2022 \u20b95.50 Cr 17.7Y Backtest", "color": "#f97316", "slots": 7, "leverage": 2.0, "initial_capital": 100000.0, "nav": 99750.88, "pnl": -249.12, "ret_pct": -0.25, "cash": 103.75, "debt": 0.0, "interest_paid": 0.0, "gold_units": 849, "gold_price": 117.37, "gold_val": 99647.13, "regime": "BEAR", "positions_count": 0, "trades_count": 0, "win_rate": 0.0, "equity_history": [{"date": "2026-10-22", "equity": 99750.88, "cash": 103.75, "stock_value": 0, "gold_value": 99647.13, "debt": 0.0}], "positions": [], "trades": []}, "tiered_10_1_5x": {"id": "tiered_10_1_5x", "name": "Tiered 10-Slot (1.5x MTF Control)", "short_name": "1.5x 10-Slot Control", "badge": "\ud83d\udcca 1.5x 10-Slot Control", "description": "Original 10-Slot Baseline Control (18% / 11% / 6.2%)", "color": "#a855f7", "slots": 10, "leverage": 1.5, "initial_capital": 100000.0, "nav": 99750.88, "pnl": -249.12, "ret_pct": -0.25, "cash": 103.75, "debt": 0.0, "interest_paid": 0.0, "gold_units": 849, "gold_price": 117.37, "gold_val": 99647.13, "regime": "BEAR", "positions_count": 0, "trades_count": 0, "win_rate": 0.0, "equity_history": [{"date": "2026-10-22", "equity": 99750.88, "cash": 103.75, "stock_value": 0, "gold_value": 99647.13, "debt": 0.0}], "positions": [], "trades": []}};
+    let activePId = "tiered_7_1_5x";
+    let chartInstance = null;
+
+    function renderTabs() {
+      const container = document.getElementById("tabsContainer");
+      container.innerHTML = "";
+      for (const [id, p] of Object.entries(P_DATA)) {
+        const isAct = (id === activePId);
+        const card = document.createElement("div");
+        card.className = "tab-card " + (isAct ? "active" : "");
+        card.onclick = () => switchPortfolio(id);
+        const pnlCls = p.pnl >= 0 ? "green" : "red";
+        card.innerHTML = `
+          <div class="tab-badge" style="background: ${p.color}22; color: ${p.color}; border: 1px solid ${p.color}44;">${p.badge}</div>
+          <div class="tab-name">${p.short_name}</div>
+          <div class="tab-nav" style="color: ${p.color};">₹ ${p.nav.toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>
+          <div class="tab-ret ${pnlCls}">${p.pnl >= 0 ? '+' : ''}₹ ${p.pnl.toLocaleString('en-IN')} (${p.ret_pct >= 0 ? '+' : ''}${p.ret_pct.toFixed(2)}%)</div>
+        `;
+        container.appendChild(card);
       }
-    });
+    }
+
+    function switchPortfolio(id) {
+      activePId = id;
+      renderTabs();
+      updateView();
+    }
+
+    function updateView() {
+      const p = P_DATA[activePId];
+      if (!p) return;
+
+      document.getElementById("activeBadge").innerText = p.badge;
+      document.getElementById("activeBadge").style.color = p.color;
+      document.getElementById("activeBadge").style.background = p.color + "22";
+      document.getElementById("activeTitle").innerText = p.name;
+      document.getElementById("activeDesc").innerText = p.description;
+      document.getElementById("activeSlots").innerText = p.slots + " Stocks";
+      document.getElementById("activeLev").innerText = p.leverage + "x MTF";
+
+      document.getElementById("kpiNav").innerText = "₹ " + p.nav.toLocaleString('en-IN', {minimumFractionDigits: 2});
+      const pnlSign = p.pnl >= 0 ? "+" : "";
+      document.getElementById("kpiPnl").innerText = `${pnlSign}₹ ${p.pnl.toLocaleString('en-IN', {minimumFractionDigits: 2})} (${pnlSign}${p.ret_pct.toFixed(2)}%)`;
+      document.getElementById("kpiPnl").className = "kpi-val " + (p.pnl >= 0 ? "green" : "red");
+
+      const regEl = document.getElementById("kpiRegime");
+      regEl.innerText = p.regime;
+      regEl.className = "kpi-val " + (p.regime === "BULL" ? "green" : "red");
+      document.getElementById("kpiRegimeSub").innerText = p.regime === "BULL" ? "Nifty 50 > 200 EMA (Equity Active)" : "Nifty 50 < 200 EMA (Capital in Gold)";
+
+      document.getElementById("kpiPosCount").innerHTML = `${p.positions_count} / ${p.slots} <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">| ${p.win_rate.toFixed(1)}% WR</span>`;
+      document.getElementById("kpiTradesCount").innerText = p.trades_count + " Closed Trades";
+
+      let cashBadge = p.gold_units > 0 
+        ? `<span style="font-size: 12px; color: var(--gold);">(+ ₹ ${p.gold_val.toLocaleString('en-IN')} Gold)</span>`
+        : `<span style="font-size: 12px; color: var(--red);">(-₹${p.debt.toLocaleString('en-IN')} MTF)</span>`;
+      document.getElementById("kpiCash").innerHTML = `₹ ${p.cash.toLocaleString('en-IN')} ` + cashBadge;
+      document.getElementById("kpiDebt").innerText = `Debt: ₹ ${p.debt.toLocaleString('en-IN')} | Margin Paid: ₹ ${p.interest_paid.toFixed(2)}`;
+
+      // Open Positions Table
+      const posTbody = document.getElementById("openPositionsBody");
+      let posRows = "";
+      if (p.gold_units > 0) {
+        posRows += `
+          <tr style="background: rgba(245, 158, 11, 0.05);">
+            <td class="symbol-cell"><span style="color: var(--gold); font-size: 16px;">🛡️</span> GOLDBEES.NS <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid #f59e0b; font-size: 10px;">DEFENSIVE HEDGE</span></td>
+            <td><span class="tier-badge" style="color: #fbbf24; background: rgba(245, 158, 11, 0.1);">100% Capital Hedge</span></td>
+            <td>${new Date().toISOString().split('T')[0]}</td>
+            <td>₹ ${p.gold_price.toFixed(2)}</td>
+            <td><strong>₹ ${p.gold_price.toFixed(2)}</strong></td>
+            <td>${p.gold_units.toLocaleString('en-IN')}</td>
+            <td>₹ ${p.gold_val.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+            <td style="color: var(--text-muted); font-size: 11px;">Macro Regime Exit</td>
+            <td style="color: var(--text-muted); font-size: 11px;">N/A (Liquid ETF)</td>
+            <td class="green" style="font-weight: 700;">₹ 0.00 (+0.00%)</td>
+          </tr>
+        `;
+      }
+      for (const pos of p.positions) {
+        const unPnlCls = pos.unrealized_pnl >= 0 ? "green" : "red";
+        posRows += `
+          <tr>
+            <td class="symbol-cell">${pos.symbol}</td>
+            <td><span class="tier-badge ${pos.tier.includes('Tier 1') ? 'tier-t1' : ''}">${pos.tier.split(' ')[0]} (${pos.weight_pct}%)</span></td>
+            <td>${pos.entry_date}</td>
+            <td>₹ ${pos.entry_px.toFixed(2)}</td>
+            <td><strong>₹ ${pos.current_px.toFixed(2)}</strong></td>
+            <td>${pos.units}</td>
+            <td>₹ ${pos.cost.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+            <td style="color: var(--red);">₹ ${pos.stop_8_px.toFixed(2)}</td>
+            <td style="color: var(--orange); font-weight: 700;">₹ ${pos.gtt_12_px.toFixed(2)}</td>
+            <td class="${unPnlCls}" style="font-weight: 700;">
+              ${pos.unrealized_pnl >= 0 ? '+' : ''}₹ ${pos.unrealized_pnl.toLocaleString('en-IN', {minimumFractionDigits: 2})} (${pos.unrealized_pct >= 0 ? '+' : ''}${pos.unrealized_pct.toFixed(2)}%)
+            </td>
+          </tr>
+        `;
+      }
+      posTbody.innerHTML = posRows || '<tr><td colspan="10" style="text-align:center; padding: 24px; color: var(--text-muted);">No open equity positions. Scanner active at 4:00 PM EOD.</td></tr>';
+      document.getElementById("tablePosCount").innerText = p.positions.length + (p.gold_units > 0 ? 1 : 0);
+
+      // Closed Trades Table
+      const tradesTbody = document.getElementById("closedTradesBody");
+      let tradeRows = "";
+      for (const t of p.trades) {
+        const pnlCls = t.pnl >= 0 ? "green" : "red";
+        tradeRows += `
+          <tr>
+            <td class="symbol-cell">${t.symbol}</td>
+            <td>${t.entry_date}</td>
+            <td>₹ ${t.entry_px.toFixed(2)}</td>
+            <td>${t.exit_date}</td>
+            <td>₹ ${t.exit_px.toFixed(2)}</td>
+            <td>${t.units}</td>
+            <td class="${pnlCls}" style="font-weight: 700;">${t.pnl >= 0 ? '+' : ''}₹ ${t.pnl.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+            <td class="${pnlCls}" style="font-weight: 700;">${t.ret_pct >= 0 ? '+' : ''}${t.ret_pct.toFixed(2)}%</td>
+            <td><strong>${t.exit_type}</strong></td>
+          </tr>
+        `;
+      }
+      tradesTbody.innerHTML = tradeRows || '<tr><td colspan="9" style="text-align:center; padding: 20px; color: var(--text-muted);">No closed trades yet in forward test sequence.</td></tr>';
+      document.getElementById("tableTradesCount").innerText = p.trades_count;
+
+      updateChart();
+    }
+
+    function updateChart() {
+      const ctx = document.getElementById('equityChart').getContext('2d');
+      const allDates = Array.from(new Set(Object.values(P_DATA).flatMap(p => p.equity_history.map(x => x.date)))).sort();
+
+      const datasets = Object.values(P_DATA).map(p => {
+        const map = new Map(p.equity_history.map(x => [x.date, x.equity]));
+        const data = allDates.map(d => map.get(d) || null);
+        const isAct = (p.id === activePId);
+        return {
+          label: p.name,
+          data: data,
+          borderColor: p.color,
+          backgroundColor: p.color + (isAct ? "15" : "00"),
+          borderWidth: isAct ? 3 : 1.5,
+          pointRadius: 2,
+          fill: isAct,
+          tension: 0.1
+        };
+      });
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: allDates,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
+          },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+    }
+
+    // Initialize
+    renderTabs();
+    updateView();
   </script>
 </body>
 </html>

@@ -18,7 +18,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
 from live_paper_trader.engine import PaperTradingEngine
-from live_paper_trader.config import STATE_FILE, TRADES_FILE, EQUITY_FILE, SCAN_RESULTS_FILE
+from live_paper_trader.config import (
+    PORTFOLIOS,
+    REPORTS_DIR,
+    STATE_FILE,
+    TRADES_FILE,
+    EQUITY_FILE,
+    SCAN_RESULTS_FILE
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,13 +48,15 @@ def main():
     engine = PaperTradingEngine()
 
     if args.mode == "reset":
-        logger.warning("Resetting forward-test state to initial capital...")
-        for p in [STATE_FILE, TRADES_FILE, EQUITY_FILE, SCAN_RESULTS_FILE]:
-            if p.exists():
+        logger.warning("Resetting forward-test state for all 4 portfolios to initial capital...")
+        for p in REPORTS_DIR.glob("*.json"):
+            try:
                 p.unlink()
+            except Exception:
+                pass
         engine = PaperTradingEngine()
         engine.generate_dashboard_html()
-        logger.info("Portfolio successfully reset.")
+        logger.info("All 4 forward-testing portfolios successfully reset.")
         return
 
     if args.mode == "auto":
@@ -84,18 +93,21 @@ def main():
     elif args.mode == "eod":
         engine.run_eod_cycle()
     elif args.mode == "status":
-        nav = engine.calculate_total_equity()
-        print("\n" + "=" * 70)
-        print(f"📊 LIVE PORTFOLIO STATUS ({engine.state.get('last_updated', 'N/A')})")
-        print("=" * 70)
-        print(f"Current Net Equity (NAV) : ₹ {nav:,.2f}")
-        print(f"Cash Balance             : ₹ {engine.state.get('cash', 0.0):,.2f}")
-        print(f"Borrowed MTF Debt        : ₹ {engine.state.get('borrowed_debt', 0.0):,.2f}")
-        print(f"Total Margin Interest    : ₹ {engine.state.get('total_interest_paid', 0.0):,.2f}")
-        print(f"Market Regime            : {engine.state.get('current_regime', 'BULL')}")
-        print(f"Open Positions Count     : {len(engine.state.get('positions', {}))}")
-        print(f"Closed Trades Count      : {len(engine.trades)}")
-        print("=" * 70 + "\n")
+        print("\n" + "=" * 90)
+        print(f"📊 LIVE 4-PORTFOLIO FORWARD TESTING STATUS ({datetime.now().strftime('%Y-%m-%d %H:%M:%S IST')})")
+        print("=" * 90)
+        print(f"{'Portfolio Architecture':<36} | {'NAV (₹)':<13} | {'Net Ret':<9} | {'Positions':<9} | {'Trades':<7} | {'Regime':<6}")
+        print("-" * 90)
+        for p_id, p_cfg in engine.portfolios.items():
+            st = engine.states[p_id]
+            nav = engine.calculate_portfolio_equity(p_id)
+            init_cap = p_cfg.get("initial_capital", 100000.0)
+            ret_pct = ((nav / init_cap) - 1.0) * 100.0
+            pos_cnt = len(st.get("positions", {}))
+            trades_cnt = len(engine.trades[p_id])
+            reg = st.get("current_regime", "BULL")
+            print(f"{p_cfg['name']:<36} | ₹ {nav:>10,.2f} | {ret_pct:>+6.2f}% | {pos_cnt:>2}/{p_cfg['slots']:<2} stocks | {trades_cnt:>5}   | {reg}")
+        print("=" * 90 + "\n")
         engine.generate_dashboard_html()
 
 if __name__ == "__main__":

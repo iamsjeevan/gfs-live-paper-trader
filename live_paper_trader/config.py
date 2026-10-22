@@ -32,14 +32,66 @@ MODULE_DIR = Path(__file__).resolve().parent
 UNIVERSE_FILE = MODULE_DIR / "universe_india_liquid.json" # Nifty 500 & liquid smallcaps
 
 # Capital & Leverage Configuration
-INITIAL_CAPITAL = float(os.getenv("INITIAL_CAPITAL", "100000.0")) # ₹ 1,00,000
-LEVERAGE = float(os.getenv("LEVERAGE", "1.5")) # 1.5x Kelly-optimal leverage (or 1.0x cash)
-MAX_POSITIONS = 10
+INITIAL_CAPITAL = float(os.getenv("INITIAL_CAPITAL", "100000.0")) # ₹ 1,00,000 per portfolio
 ANNUAL_INTEREST_RATE = 0.11 # 11% p.a. MTF broker interest
 DAILY_INTEREST_RATE = ANNUAL_INTEREST_RATE / 252.0
 
-# Tiered Conviction Weights (Rank 1-2: 18%, Rank 3-5: 11%, Rank 6-10: 6.2%)
-TIER_WEIGHTS = [0.18, 0.18, 0.11, 0.11, 0.11, 0.062, 0.062, 0.062, 0.062, 0.062]
+# 4 Live Forward-Testing Portfolio Configurations
+PORTFOLIOS = {
+    "tiered_7_1_5x": {
+        "id": "tiered_7_1_5x",
+        "name": "Tiered 7-Slot (1.5x MTF Champion)",
+        "short_name": "1.5x Champion",
+        "badge": "👑 1.5x MTF Champion",
+        "slots": 7,
+        "weights": [0.22, 0.22, 0.15, 0.15, 0.086, 0.086, 0.088],
+        "leverage": 1.5,
+        "initial_capital": INITIAL_CAPITAL,
+        "color": "#38bdf8", # Sky blue
+        "description": "Optimal Kelly Growth • Sharpe 1.14 • ₹2.88 Cr 17.7Y Backtest"
+    },
+    "tiered_7_1x": {
+        "id": "tiered_7_1x",
+        "name": "Tiered 7-Slot (1.0x Pure Cash)",
+        "short_name": "1.0x Cash",
+        "badge": "🛡️ 1.0x Pure Cash",
+        "slots": 7,
+        "weights": [0.22, 0.22, 0.15, 0.15, 0.086, 0.086, 0.088],
+        "leverage": 1.0,
+        "initial_capital": INITIAL_CAPITAL,
+        "color": "#34d399", # Emerald green
+        "description": "Zero Margin Debt • Pure Cash • Lowest Career Drawdown"
+    },
+    "tiered_7_2x": {
+        "id": "tiered_7_2x",
+        "name": "Tiered 7-Slot (2.0x MTF Alpha)",
+        "short_name": "2.0x Alpha",
+        "badge": "🚀 2.0x MTF Alpha",
+        "slots": 7,
+        "weights": [0.22, 0.22, 0.15, 0.15, 0.086, 0.086, 0.088],
+        "leverage": 2.0,
+        "initial_capital": INITIAL_CAPITAL,
+        "color": "#f97316", # Orange
+        "description": "Maximum Purchasing Power • ₹5.50 Cr 17.7Y Backtest"
+    },
+    "tiered_10_1_5x": {
+        "id": "tiered_10_1_5x",
+        "name": "Tiered 10-Slot (1.5x MTF Control)",
+        "short_name": "1.5x 10-Slot Control",
+        "badge": "📊 1.5x 10-Slot Control",
+        "slots": 10,
+        "weights": [0.18, 0.18, 0.11, 0.11, 0.11, 0.062, 0.062, 0.062, 0.062, 0.062],
+        "leverage": 1.5,
+        "initial_capital": INITIAL_CAPITAL,
+        "color": "#a855f7", # Purple
+        "description": "Original 10-Slot Baseline Control (18% / 11% / 6.2%)"
+    }
+}
+
+# Legacy default aliases for single-model backward compatibility
+MAX_POSITIONS = 7
+LEVERAGE = 1.5
+TIER_WEIGHTS = [0.22, 0.22, 0.15, 0.15, 0.086, 0.086, 0.088]
 
 # Dual-Layer Stop Loss Architecture
 GTT_CIRCUIT_STOP_PCT = -0.12 # -12.0% Intraday Emergency GTT Circuit Guard
