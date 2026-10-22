@@ -446,6 +446,49 @@ class PaperTradingEngine:
         wins = [t for t in self.trades if t["pnl"] > 0]
         wr = (len(wins) / len(self.trades) * 100) if self.trades else 0.0
 
+        gold_units = self.state.get("gold_units", 0)
+        gold_px = self.state.get("gold_price", 117.30)
+        gold_val = gold_units * gold_px
+
+        if gold_units > 0:
+            cash_sub_badge = f'<span style="font-size: 12px; color: var(--gold);">(+ ₹ {gold_val:,.0f} Gold)</span>'
+        else:
+            debt = self.state.get("borrowed_debt", 0.0)
+            cash_sub_badge = f'<span style="font-size: 12px; color: var(--red);">(-₹{debt:,.0f} MTF)</span>'
+
+        pos_rows = []
+        if gold_units > 0:
+            pos_rows.append(f'''
+          <tr style="background: rgba(245, 158, 11, 0.05);">
+            <td class="symbol-cell"><span style="color: var(--gold); font-size: 16px;">🛡️</span> {CASH_PROXY} <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid #f59e0b; font-size: 10px;">DEFENSIVE HEDGE</span></td>
+            <td><span class="tier-badge" style="color: #fbbf24; background: rgba(245, 158, 11, 0.1);">100% Capital Hedge</span></td>
+            <td>{self.state.get("last_updated", "").split()[0]}</td>
+            <td>₹ {gold_px:.2f}</td>
+            <td><strong>₹ {gold_px:.2f}</strong></td>
+            <td>{gold_units:,}</td>
+            <td>₹ {gold_val:,.2f}</td>
+            <td style="color: var(--text-muted); font-size: 11px;">Macro Regime Exit</td>
+            <td style="color: var(--text-muted); font-size: 11px;">N/A (Liquid ETF)</td>
+            <td class="green" style="font-weight: 700;">₹ 0.00 (+0.00%)</td>
+          </tr>''')
+        for p in positions:
+            pos_rows.append(f'''
+          <tr>
+            <td class="symbol-cell">{p["symbol"]}</td>
+            <td><span class="tier-badge {"tier-t1" if "Tier 1" in p.get("tier","") else ""}">{p.get("tier","Tier 3").split()[0]} ({p.get("weight_pct", 6.2)}%)</span></td>
+            <td>{p.get("entry_date")}</td>
+            <td>₹ {p["entry_px"]:.2f}</td>
+            <td><strong>₹ {p.get("current_px", p["entry_px"]):.2f}</strong></td>
+            <td>{p["units"]}</td>
+            <td>₹ {p["cost"]:,.2f}</td>
+            <td style="color: var(--red);">₹ {p.get("stop_8_px", p["entry_px"]*0.92):.2f}</td>
+            <td style="color: var(--orange); font-weight: 700;">₹ {p.get("gtt_12_px", p["entry_px"]*0.88):.2f}</td>
+            <td class="{'green' if p.get('unrealized_pnl', 0) >= 0 else 'red'}" style="font-weight: 700;">
+              {'+' if p.get('unrealized_pnl', 0) >= 0 else ''}₹ {p.get('unrealized_pnl', 0):,.2f} ({p.get('unrealized_pct', 0):+.2f}%)
+            </td>
+          </tr>''')
+        pos_html = "".join(pos_rows) if pos_rows else '<tr><td colspan="10" style="text-align:center; padding: 24px; color: var(--text-muted);">No open positions currently active. Scanner active at EOD.</td></tr>'
+
         html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -527,7 +570,7 @@ class PaperTradingEngine:
       <div class="kpi-card">
         <div class="kpi-lbl">Market Regime Filter</div>
         <div class="kpi-val {'green' if self.state.get('current_regime') == 'BULL' else 'red'}">{self.state.get('current_regime')}</div>
-        <div class="kpi-sub">Benchmark > 200 EMA</div>
+        <div class="kpi-sub">{'Nifty 50 > 200 EMA (Equity Scan Active)' if self.state.get('current_regime') == 'BULL' else 'Nifty 50 < 200 EMA (Capital in Gold)'}</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-lbl">Active Positions & WR</div>
@@ -535,9 +578,9 @@ class PaperTradingEngine:
         <div class="kpi-sub">{len(self.trades)} Closed Trades</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-lbl">Cash & Borrowed Debt</div>
-        <div class="kpi-val" style="font-size: 18px; margin-top: 8px;">₹ {self.state.get('cash', 0.0):,.0f} <span style="font-size: 12px; color: var(--red);">(-₹{self.state.get('borrowed_debt', 0.0):,.0f} MTF)</span></div>
-        <div class="kpi-sub">Interest Paid: ₹ {self.state.get('total_interest_paid', 0.0):,.2f}</div>
+        <div class="kpi-lbl">Cash & Capital Allocation</div>
+        <div class="kpi-val" style="font-size: 18px; margin-top: 8px;">₹ {self.state.get('cash', 0.0):,.0f} {cash_sub_badge}</div>
+        <div class="kpi-sub">Debt: ₹ {self.state.get('borrowed_debt', 0.0):,.0f} | Margin Paid: ₹ {self.state.get('total_interest_paid', 0.0):,.2f}</div>
       </div>
     </div>
 
@@ -549,7 +592,7 @@ class PaperTradingEngine:
 
     <!-- Open Positions -->
     <div class="section-title">
-      Active Open Positions ({len(positions)})
+      Active Open Positions ({len(positions) + (1 if gold_units > 0 else 0)})
       <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">Guarded by -12% Intraday GTT & 21 EMA Trailing Stop</span>
     </div>
     <div class="card">
@@ -569,22 +612,7 @@ class PaperTradingEngine:
           </tr>
         </thead>
         <tbody>
-          {"".join(f'''
-          <tr>
-            <td class="symbol-cell">{p["symbol"]}</td>
-            <td><span class="tier-badge {"tier-t1" if "Tier 1" in p.get("tier","") else ""}">{p.get("tier","Tier 3").split()[0]} ({p.get("weight_pct", 6.2)}%)</span></td>
-            <td>{p.get("entry_date")}</td>
-            <td>₹ {p["entry_px"]:.2f}</td>
-            <td><strong>₹ {p.get("current_px", p["entry_px"]):.2f}</strong></td>
-            <td>{p["units"]}</td>
-            <td>₹ {p["cost"]:,.2f}</td>
-            <td style="color: var(--red);">₹ {p.get("stop_8_px", p["entry_px"]*0.92):.2f}</td>
-            <td style="color: var(--orange); font-weight: 700;">₹ {p.get("gtt_12_px", p["entry_px"]*0.88):.2f}</td>
-            <td class="{'green' if p.get('unrealized_pnl', 0) >= 0 else 'red'}" style="font-weight: 700;">
-              {'+' if p.get('unrealized_pnl', 0) >= 0 else ''}₹ {p.get('unrealized_pnl', 0):,.2f} ({p.get('unrealized_pct', 0):+.2f}%)
-            </td>
-          </tr>
-          ''' for p in positions) if positions else '<tr><td colspan="10" style="text-align:center; padding: 24px; color: var(--text-muted);">No open positions currently active. Scanner active at EOD.</td></tr>'}
+          {pos_html}
         </tbody>
       </table>
     </div>

@@ -18,6 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
 from live_paper_trader.engine import PaperTradingEngine
+from live_paper_trader.config import STATE_FILE, TRADES_FILE, EQUITY_FILE, SCAN_RESULTS_FILE
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,8 +42,9 @@ def main():
 
     if args.mode == "reset":
         logger.warning("Resetting forward-test state to initial capital...")
-        if engine.STATE_FILE.exists():
-            engine.STATE_FILE.unlink()
+        for p in [STATE_FILE, TRADES_FILE, EQUITY_FILE, SCAN_RESULTS_FILE]:
+            if p.exists():
+                p.unlink()
         engine = PaperTradingEngine()
         engine.generate_dashboard_html()
         logger.info("Portfolio successfully reset.")
