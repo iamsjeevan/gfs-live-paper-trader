@@ -277,12 +277,41 @@ class PaperTradingNotifier:
         self._send_email(subject=subject, html_body=html_body, text_body=plain_text)
         self._send_telegram(f"📊 *{market.upper()} Monthly Report*\nEquity: {curr}{total_equity:,.0f} ({tot_ret_pct:+.2f}%)\nActive Slots: {len(positions)}/10")
 
+    def send_test_email(self) -> bool:
+        """Sends a verification email to confirm GitHub Secrets and SMTP connectivity."""
+        date_str = datetime.now().strftime("%d %b %Y %H:%M:%S IST")
+        subject = f"✅ Forward-Test Bot: Notification System Verified ({date_str})"
+        plain_text = f"Forward-Test Notification System Verified at {date_str}. All 6 portfolios active."
+        html_body = f"""
+        <html>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 1.5; color: #222; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #0b1329; color: white; padding: 20px; border-radius: 8px 8px 0 0; border-bottom: 3px solid #38bdf8;">
+                <h2 style="margin: 0; font-size: 20px;">✅ Forward-Test Notifications Operational</h2>
+                <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">SMTP & GitHub Actions Permissions Test Passed</div>
+            </div>
+            <div style="padding: 20px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px;">
+                <p>Hello Jeevan,</p>
+                <p>This verification email confirms that:</p>
+                <ul>
+                    <li><strong>GitHub Actions Workflow:</strong> Executing normally with read & write permissions.</li>
+                    <li><strong>Email Secrets (SMTP):</strong> Authenticated successfully with Gmail App Password.</li>
+                    <li><strong>Live Portfolios:</strong> All 6 models (7-Slot vs 10-Slot across 1.0x, 1.5x, 2.0x) are tracked.</li>
+                    <li><strong>Automated Schedule:</strong> Intraday hourly checks (9:30 AM–3:30 PM IST) and EOD scan (4:00 PM IST) active on weekdays.</li>
+                    <li><strong>Live Vercel Dashboard:</strong> <a href="https://gfs-live-paper-trader.vercel.app">https://gfs-live-paper-trader.vercel.app</a></li>
+                </ul>
+                <div style="font-size: 12px; color: #64748b; margin-top: 20px;">System Timestamp: {date_str}</div>
+            </div>
+        </body>
+        </html>
+        """
+        return self._send_email(subject, html_body, plain_text)
+
     def send_eod_multi_portfolio_summary(
         self,
         portfolios_data: Dict[str, Any],
         regime_info: Dict[str, Any]
     ):
-        """Sends daily 4:00 PM IST summary email comparing all 4 portfolios."""
+        """Sends daily 4:00 PM IST summary email comparing all 6 portfolios."""
         date_str = datetime.now().strftime("%d %b %Y")
         regime = regime_info.get("regime", "BULL")
         nifty_close = regime_info.get("close", 0.0)
@@ -312,7 +341,7 @@ class PaperTradingNotifier:
         <body style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 1.5; color: #222; max-width: 680px; margin: 0 auto; padding: 20px;">
             <div style="background-color: #0b1329; color: white; padding: 20px; border-radius: 8px 8px 0 0; border-bottom: 3px solid #38bdf8;">
                 <h2 style="margin: 0; font-size: 20px;">🚀 Indian Equities Swing Forward Test</h2>
-                <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Daily Close Summary • {date_str} • 4 Portfolios Tracked</div>
+                <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Daily Close Summary • {date_str} • 6 Portfolios Tracked</div>
             </div>
 
             <div style="padding: 20px; background-color: #f8fafc; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">

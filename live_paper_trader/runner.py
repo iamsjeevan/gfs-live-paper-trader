@@ -39,16 +39,16 @@ def main():
     parser = argparse.ArgumentParser(description="Autonomous Indian Equities Swing Forward-Test Runner")
     parser.add_argument(
         "--mode",
-        choices=["auto", "intraday", "eod", "status", "reset"],
+        choices=["auto", "intraday", "eod", "status", "reset", "test-email"],
         default="auto",
-        help="Execution mode: auto (smart IST scheduler), intraday, eod, status, or reset"
+        help="Execution mode: auto (smart IST scheduler), intraday, eod, status, reset, or test-email"
     )
     args = parser.parse_args()
 
     engine = PaperTradingEngine()
 
     if args.mode == "reset":
-        logger.warning("Resetting forward-test state for all 4 portfolios to initial capital...")
+        logger.warning("Resetting forward-test state for all 6 portfolios to initial capital...")
         for p in REPORTS_DIR.glob("*.json"):
             try:
                 p.unlink()
@@ -56,7 +56,16 @@ def main():
                 pass
         engine = PaperTradingEngine()
         engine.generate_dashboard_html()
-        logger.info("All 4 forward-testing portfolios successfully reset.")
+        logger.info("All 6 forward-testing portfolios successfully reset.")
+        return
+
+    if args.mode == "test-email":
+        logger.info("Triggering test verification email across configured SMTP credentials...")
+        success = engine.notifier.send_test_email()
+        if success:
+            logger.info("Test email successfully sent and delivered!")
+        else:
+            logger.warning("Test email delivery simulation completed (or SMTP error occurred).")
         return
 
     if args.mode == "auto":

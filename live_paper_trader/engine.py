@@ -175,7 +175,7 @@ class PaperTradingEngine:
         """
         Monitors open positions across all 4 portfolios for -12% Emergency Intraday GTT Guard.
         """
-        logger.info("⚡ Running Hourly Intraday Market-Hours GTT Circuit Guard Check (4 Portfolios)...")
+        logger.info("⚡ Running Hourly Intraday Market-Hours GTT Circuit Guard Check (6 Portfolios)...")
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
 
         # Collect unique open symbols across all portfolios
@@ -285,7 +285,7 @@ class PaperTradingEngine:
         - Screens 700+ liquid Indian universe for Stage 2 breakouts
         - Sizes and enters new setups per portfolio configuration
         """
-        logger.info("🌙 Running End-of-Day (EOD) Screening & Rebalance Cycle (4 Portfolios)...")
+        logger.info("🌙 Running End-of-Day (EOD) Screening & Rebalance Cycle (6 Portfolios)...")
         today_str = datetime.now().strftime("%Y-%m-%d")
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
 
@@ -614,7 +614,7 @@ class PaperTradingEngine:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Swing Momentum Forward Test • 4 Portfolios</title>
+  <title>Live Swing Momentum Forward Test • 6 Portfolios</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {{
@@ -734,7 +734,7 @@ class PaperTradingEngine:
     <!-- Comparative Equity Curve -->
     <div class="section-title">
       Comparative Forward-Test Equity Curves
-      <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">All 4 Portfolios Tracked Side-by-Side</span>
+      <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">All 6 Portfolios Tracked Side-by-Side</span>
     </div>
     <div class="card chart-box">
       <canvas id="equityChart"></canvas>
@@ -970,4 +970,4 @@ class PaperTradingEngine:
 """
         with open(DASHBOARD_FILE, "w") as f:
             f.write(html)
-        logger.info(f"Updated unified 4-portfolio Vercel dashboard: {DASHBOARD_FILE}")
+        logger.info(f"Updated unified 6-portfolio Vercel dashboard: {DASHBOARD_FILE}")
