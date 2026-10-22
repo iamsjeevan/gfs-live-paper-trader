@@ -94,7 +94,7 @@ def main():
         engine.run_eod_cycle()
     elif args.mode == "status":
         print("\n" + "=" * 90)
-        print(f"📊 LIVE 4-PORTFOLIO FORWARD TESTING STATUS ({datetime.now().strftime('%Y-%m-%d %H:%M:%S IST')})")
+        print(f"📊 LIVE 6-PORTFOLIO FORWARD TESTING STATUS ({datetime.now().strftime('%Y-%m-%d %H:%M:%S IST')})")
         print("=" * 90)
         print(f"{'Portfolio Architecture':<36} | {'NAV (₹)':<13} | {'Net Ret':<9} | {'Positions':<9} | {'Trades':<7} | {'Regime':<6}")
         print("-" * 90)

@@ -36,13 +36,14 @@ INITIAL_CAPITAL = float(os.getenv("INITIAL_CAPITAL", "100000.0")) # ₹ 1,00,000
 ANNUAL_INTEREST_RATE = 0.11 # 11% p.a. MTF broker interest
 DAILY_INTEREST_RATE = ANNUAL_INTEREST_RATE / 252.0
 
-# 4 Live Forward-Testing Portfolio Configurations
+# 6 Live Forward-Testing Portfolio Configurations (7-Slot vs 10-Slot across 1.0x, 1.5x, 2.0x Leverage)
 PORTFOLIOS = {
+    # --- 7-SLOT FAMILY (CHAMPION ARCHITECTURE) ---
     "tiered_7_1_5x": {
         "id": "tiered_7_1_5x",
         "name": "Tiered 7-Slot (1.5x MTF Champion)",
-        "short_name": "1.5x Champion",
-        "badge": "👑 1.5x MTF Champion",
+        "short_name": "7-Slot • 1.5x Champion",
+        "badge": "👑 7-Slot 1.5x Champion",
         "slots": 7,
         "weights": [0.22, 0.22, 0.15, 0.15, 0.086, 0.086, 0.088],
         "leverage": 1.5,
@@ -53,20 +54,20 @@ PORTFOLIOS = {
     "tiered_7_1x": {
         "id": "tiered_7_1x",
         "name": "Tiered 7-Slot (1.0x Pure Cash)",
-        "short_name": "1.0x Cash",
-        "badge": "🛡️ 1.0x Pure Cash",
+        "short_name": "7-Slot • 1.0x Cash",
+        "badge": "🛡️ 7-Slot 1.0x Cash",
         "slots": 7,
         "weights": [0.22, 0.22, 0.15, 0.15, 0.086, 0.086, 0.088],
         "leverage": 1.0,
         "initial_capital": INITIAL_CAPITAL,
         "color": "#34d399", # Emerald green
-        "description": "Zero Margin Debt • Pure Cash • Lowest Career Drawdown"
+        "description": "Zero Margin Debt • Pure Cash • Lowest Career Drawdown (-41%)"
     },
     "tiered_7_2x": {
         "id": "tiered_7_2x",
         "name": "Tiered 7-Slot (2.0x MTF Alpha)",
-        "short_name": "2.0x Alpha",
-        "badge": "🚀 2.0x MTF Alpha",
+        "short_name": "7-Slot • 2.0x Alpha",
+        "badge": "🚀 7-Slot 2.0x Alpha",
         "slots": 7,
         "weights": [0.22, 0.22, 0.15, 0.15, 0.086, 0.086, 0.088],
         "leverage": 2.0,
@@ -74,17 +75,43 @@ PORTFOLIOS = {
         "color": "#f97316", # Orange
         "description": "Maximum Purchasing Power • ₹5.50 Cr 17.7Y Backtest"
     },
+
+    # --- 10-SLOT FAMILY (CONTROL ARCHITECTURE) ---
     "tiered_10_1_5x": {
         "id": "tiered_10_1_5x",
         "name": "Tiered 10-Slot (1.5x MTF Control)",
-        "short_name": "1.5x 10-Slot Control",
-        "badge": "📊 1.5x 10-Slot Control",
+        "short_name": "10-Slot • 1.5x Control",
+        "badge": "📊 10-Slot 1.5x Control",
         "slots": 10,
         "weights": [0.18, 0.18, 0.11, 0.11, 0.11, 0.062, 0.062, 0.062, 0.062, 0.062],
         "leverage": 1.5,
         "initial_capital": INITIAL_CAPITAL,
         "color": "#a855f7", # Purple
         "description": "Original 10-Slot Baseline Control (18% / 11% / 6.2%)"
+    },
+    "tiered_10_1x": {
+        "id": "tiered_10_1x",
+        "name": "Tiered 10-Slot (1.0x Pure Cash)",
+        "short_name": "10-Slot • 1.0x Cash",
+        "badge": "🛡️ 10-Slot 1.0x Cash",
+        "slots": 10,
+        "weights": [0.18, 0.18, 0.11, 0.11, 0.11, 0.062, 0.062, 0.062, 0.062, 0.062],
+        "leverage": 1.0,
+        "initial_capital": INITIAL_CAPITAL,
+        "color": "#10b981", # Green
+        "description": "Zero Margin Debt • 10-Slot Broad Diversification"
+    },
+    "tiered_10_2x": {
+        "id": "tiered_10_2x",
+        "name": "Tiered 10-Slot (2.0x MTF Alpha)",
+        "short_name": "10-Slot • 2.0x Alpha",
+        "badge": "⚡ 10-Slot 2.0x Alpha",
+        "slots": 10,
+        "weights": [0.18, 0.18, 0.11, 0.11, 0.11, 0.062, 0.062, 0.062, 0.062, 0.062],
+        "leverage": 2.0,
+        "initial_capital": INITIAL_CAPITAL,
+        "color": "#ec4899", # Pink
+        "description": "High Purchasing Power • 10-Slot Diversified MTF (₹2.96 Cr)"
     }
 }
 

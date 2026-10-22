@@ -678,8 +678,8 @@ class PaperTradingEngine:
   <div class="container">
     <div class="header">
       <div class="title-box">
-        <h1>Autonomous Forward Testing Engine <span class="badge">4 PORTFOLIOS LIVE</span></h1>
-        <div class="subtext">Stage 2 Momentum + Dual-Stop Architecture • Real-Time Forward Testing across 1.0x, 1.5x & 2.0x Leverage</div>
+        <h1>Autonomous Forward Testing Engine <span class="badge">6 PORTFOLIOS LIVE</span></h1>
+        <div class="subtext">Stage 2 Momentum + Dual-Stop Architecture • 7-Slot vs 10-Slot Matrix (1.0x Cash, 1.5x MTF, 2.0x MTF)</div>
       </div>
       <div style="text-align: right;">
         <div style="font-size: 13px; font-weight: 600; color: var(--accent);">Last Update: {now_str}</div>
