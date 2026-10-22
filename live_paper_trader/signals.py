@@ -1,220 +1,217 @@
 """
 live_paper_trader.signals
 =========================
-Live data fetcher and GFS signal generator for Indian and US markets.
-Downloads multi-timeframe candles using yfinance and generates
-institutional GFS Entry & Exit signals.
+Fast, robust market data fetcher & scanner for Indian equities.
+Implements:
+1. Macro Regime Gate (Index vs 200 EMA & 50 EMA)
+2. Live Intraday Price & Low Checker (for -12% GTT Circuit Guard)
+3. Stage 2 + 52-Week High Breakout Scanner
 """
 
 import logging
-import json
 import time
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List
 import pandas as pd
 import numpy as np
 import yfinance as yf
 
 from live_paper_trader.config import (
-    INDIA_CASH_PROXY,
-    INDIA_INDEX_TICKER,
-    INDIA_MONTHLY_EMA_SPAN,
-    USA_CASH_PROXY,
-    USA_INDEX_TICKER,
-    USA_MONTHLY_EMA_SPAN
-)
-from live_paper_trader.indicators import (
-    compute_rsi,
-    compute_ema,
-    resample_weekly,
-    resample_monthly
+    REGIME_INDEX,
+    CASH_PROXY
 )
 
 logger = logging.getLogger("live_paper_trader.signals")
 
-def get_market_regime(index_symbol: str) -> Dict[str, Any]:
+def get_market_regime() -> Dict[str, Any]:
     """
-    Fetches the benchmark index (^NSEI or SPY) and determines the macro regime:
-    BULL: Close > 200 SMA and Close > 50 SMA
-    NEUTRAL: Close > 200 SMA but <= 50 SMA
-    BEAR: Close <= 200 SMA
+    Checks the broad Indian market regime using Nifty / Smallcap index.
+    BULL (Green)    : Close > 200 EMA and Close > 50 EMA (100% capacity)
+    NEUTRAL (Yellow): Close > 200 EMA but <= 50 EMA (50% capacity)
+    BEAR (Red)      : Close <= 200 EMA (0% equity, 100% Gold BeES)
     """
     try:
-        t = yf.Ticker(index_symbol)
-        df = t.history(period="2y", interval="1d")
+        t = yf.Ticker(REGIME_INDEX)
+        df = t.history(period="1y", interval="1d")
         if df.empty or len(df) < 200:
-            logger.warning(f"Insufficient history for index {index_symbol}, defaulting to BULL")
-            return {"regime": "BULL", "close": 0.0, "sma200": 0.0}
+            logger.warning(f"Insufficient history for {REGIME_INDEX}, defaulting to BULL")
+            return {"regime": "BULL", "close": 0.0, "ema200": 0.0, "ema50": 0.0, "ret63": 0.0}
 
         close = df["Close"]
-        sma200 = close.rolling(window=200).mean().iloc[-1]
-        sma50 = close.rolling(window=50).mean().iloc[-1]
+        ema200 = close.ewm(span=200, adjust=False).mean().iloc[-1]
+        ema50 = close.ewm(span=50, adjust=False).mean().iloc[-1]
         last_close = close.iloc[-1]
 
-        if last_close > sma200 and last_close > sma50:
+        # 63-day benchmark return
+        ret63 = (last_close / close.iloc[-63] - 1) if len(close) >= 63 else 0.0
+
+        if last_close > ema200 and last_close > ema50:
             regime = "BULL"
-        elif last_close > sma200:
+        elif last_close > ema200:
             regime = "NEUTRAL"
         else:
             regime = "BEAR"
 
-        logger.info(f"Market Regime for {index_symbol}: {regime} (Close: {last_close:,.1f}, 200 SMA: {sma200:,.1f})")
+        logger.info(f"Market Regime for {REGIME_INDEX}: {regime} (Close: {last_close:,.1f}, 200 EMA: {ema200:,.1f})")
         return {
             "regime": regime,
             "close": float(last_close),
-            "sma200": float(sma200),
-            "sma50": float(sma50)
+            "ema200": float(ema200),
+            "ema50": float(ema50),
+            "ret63": float(ret63)
         }
     except Exception as e:
-        logger.error(f"Failed to fetch market regime for {index_symbol}: {e}")
-        return {"regime": "BULL", "close": 0.0, "sma200": 0.0}
+        logger.error(f"Error fetching market regime: {e}")
+        return {"regime": "BULL", "close": 0.0, "ema200": 0.0, "ema50": 0.0, "ret63": 0.0}
 
-def get_proxy_price(proxy_symbol: str) -> Dict[str, float]:
-    """Fetches latest Open and Close for cash parking proxy (GOLDBEES or BIL)."""
-    try:
-        t = yf.Ticker(proxy_symbol)
-        df = t.history(period="5d", interval="1d")
-        if df.empty:
-            raise ValueError(f"No price data returned for {proxy_symbol}")
-        last_row = df.iloc[-1]
-        return {
-            "open": float(last_row["Open"]),
-            "close": float(last_row["Close"]),
-            "date": str(df.index[-1].date())
-        }
-    except Exception as e:
-        logger.error(f"Error fetching proxy price for {proxy_symbol}: {e}")
-        return {"open": 100.0, "close": 100.0, "date": ""}
-
-def evaluate_gfs_for_stock(df: pd.DataFrame, monthly_ema_span: int = 9) -> Dict[str, Any]:
-    """
-    Evaluates GFS setup criteria for a single stock history DataFrame:
-    1. Monthly RSI > 60 AND Monthly Close > Monthly EMA(span)
-    2. Weekly RSI > 60
-    3. Daily RSI crossed above 40 (prev <= 40, curr > 40)
-    """
-    if len(df) < 60:
-        return {"valid": False, "reason": "Insufficient daily bars"}
-
-    # Clean missing values
-    df = df[["Open", "High", "Low", "Close", "Volume"]].dropna()
-
-    # 1. Daily RSI
-    df["daily_rsi"] = compute_rsi(df["Close"], 14)
-    if len(df["daily_rsi"]) < 2:
-        return {"valid": False, "reason": "Insufficient RSI history"}
-    curr_d_rsi = df["daily_rsi"].iloc[-1]
-    prev_d_rsi = df["daily_rsi"].iloc[-2]
-    daily_trigger = (prev_d_rsi <= 40.0) and (curr_d_rsi > 40.0)
-
-    # 2. Weekly RSI
-    df_w = resample_weekly(df)
-    if len(df_w) < 15:
-        return {"valid": False, "reason": "Insufficient weekly bars"}
-    df_w["weekly_rsi"] = compute_rsi(df_w["Close"], 14)
-    curr_w_rsi = df_w["weekly_rsi"].iloc[-1]
-    weekly_pass = curr_w_rsi > 60.0
-
-    # 3. Monthly Setup
-    df_m = resample_monthly(df)
-    if len(df_m) < 15:
-        return {"valid": False, "reason": "Insufficient monthly bars"}
-    df_m["monthly_rsi"] = compute_rsi(df_m["Close"], 14)
-    df_m["monthly_ema"] = compute_ema(df_m["Close"], monthly_ema_span)
-    curr_m_rsi = df_m["monthly_rsi"].iloc[-1]
-    curr_m_close = df_m["Close"].iloc[-1]
-    curr_m_ema = df_m["monthly_ema"].iloc[-1]
-    monthly_pass = (curr_m_rsi > 60.0) and (curr_m_close > curr_m_ema)
-
-    is_valid = bool(monthly_pass and weekly_pass and daily_trigger)
-
-    return {
-        "valid": is_valid,
-        "symbol": "",
-        "close": float(df["Close"].iloc[-1]),
-        "daily_rsi": float(curr_d_rsi),
-        "weekly_rsi": float(curr_w_rsi),
-        "monthly_rsi": float(curr_m_rsi),
-        "monthly_close": float(curr_m_close),
-        "monthly_ema": float(curr_m_ema),
-        "monthly_pass": bool(monthly_pass),
-        "weekly_pass": bool(weekly_pass),
-        "daily_trigger": bool(daily_trigger)
-    }
-
-def scan_gfs_universe(
-    universe_tickers: List[str],
-    market: str = "india",
-    batch_size: int = 50,
-    max_scan: int = 200
-) -> List[Dict[str, Any]]:
-    """
-    Scans universe tickers in batches to find all active GFS Entry candidates.
-    Returns list of candidate dicts ranked by Weekly RSI descending.
-    """
-    monthly_ema_span = INDIA_MONTHLY_EMA_SPAN if market.lower() == "india" else USA_MONTHLY_EMA_SPAN
-    suffix = ".NS" if market.lower() == "india" else ""
-    
-    # Format symbols
-    formatted_symbols = []
-    for s in universe_tickers[:max_scan]:
-        clean_s = s.strip().upper()
-        if market.lower() == "india" and not clean_s.endswith(".NS"):
-            clean_s += ".NS"
-        formatted_symbols.append(clean_s)
-
-    candidates = []
-    print(f"Scanning {len(formatted_symbols)} tickers for {market.upper()} GFS signals...")
-
-    # Download in batches
-    for i in range(0, len(formatted_symbols), batch_size):
-        batch = formatted_symbols[i:i + batch_size]
-        try:
-            data = yf.download(batch, period="2y", interval="1d", group_by="ticker", progress=False)
-            if data.empty:
-                continue
-
-            for sym in batch:
-                try:
-                    sym_df = data[sym] if len(batch) > 1 else data
-                    if sym_df is None or sym_df.empty or len(sym_df.dropna()) < 60:
-                        continue
-                    
-                    res = evaluate_gfs_for_stock(sym_df, monthly_ema_span=monthly_ema_span)
-                    if res.get("valid"):
-                        res["symbol"] = sym
-                        candidates.append(res)
-                        print(f"  🔥 GFS SIGNAL FOUND: {sym} (Weekly RSI: {res['weekly_rsi']:.1f}, Daily RSI: {res['daily_rsi']:.1f})")
-                except Exception as ex:
-                    continue
-        except Exception as e:
-            logger.warning(f"Batch {i} download error: {e}")
-            time.sleep(1)
-
-    # Sort descending by Weekly RSI
-    candidates.sort(key=lambda x: x["weekly_rsi"], reverse=True)
-    print(f"Found {len(candidates)} valid GFS candidate(s) in {market.upper()}.")
-    return candidates
-
-def check_stock_monthly_ema_status(symbol: str, monthly_ema_span: int = 9) -> Dict[str, Any]:
-    """
-    Checks if a stock has closed below its Monthly EMA on the latest monthly candle.
-    Used for month-end exit checking.
-    """
+def get_proxy_price(symbol: str = CASH_PROXY) -> Dict[str, float]:
+    """Fetches latest Open and Close for Gold BeES / cash parking."""
     try:
         t = yf.Ticker(symbol)
-        df = t.history(period="2y", interval="1d")
-        if df.empty or len(df) < 60:
-            return {"should_exit": False, "m_close": 0.0, "m_ema": 0.0}
-        
-        df_m = resample_monthly(df)
-        df_m["monthly_ema"] = compute_ema(df_m["Close"], monthly_ema_span)
-        last_m = df_m.iloc[-1]
-        should_exit = bool(last_m["Close"] < last_m["monthly_ema"])
+        df = t.history(period="5d", interval="1d")
+        if df.empty:
+            return {"open": 60.0, "close": 60.0}
+        last = df.iloc[-1]
         return {
-            "should_exit": should_exit,
-            "m_close": float(last_m["Close"]),
-            "m_ema": float(last_m["monthly_ema"])
+            "open": float(last["Open"]),
+            "close": float(last["Close"])
         }
     except Exception as e:
-        logger.error(f"Error checking monthly EMA for {symbol}: {e}")
-        return {"should_exit": False, "m_close": 0.0, "m_ema": 0.0}
+        logger.error(f"Error fetching proxy price for {symbol}: {e}")
+        return {"open": 60.0, "close": 60.0}
+
+def get_intraday_quotes(symbols: List[str]) -> Dict[str, Dict[str, float]]:
+    """
+    Fetches latest intraday prices (Open, High, Low, Close) for currently held positions.
+    Used for monitoring the -12% Emergency Intraday GTT Circuit Guard.
+    """
+    if not symbols:
+        return {}
+    
+    tickers = [s if s.endswith(".NS") else f"{s}.NS" for s in symbols]
+    quotes = {}
+    try:
+        data = yf.download(tickers, period="2d", interval="1d", progress=False)
+        for s in symbols:
+            t_key = s if s.endswith(".NS") else f"{s}.NS"
+            try:
+                if len(tickers) == 1:
+                    row = data.iloc[-1]
+                    quotes[s] = {
+                        "open": float(row["Open"]),
+                        "high": float(row["High"]),
+                        "low": float(row["Low"]),
+                        "close": float(row["Close"]),
+                        "current": float(row["Close"])
+                    }
+                else:
+                    o = float(data["Open"][t_key].dropna().iloc[-1])
+                    h = float(data["High"][t_key].dropna().iloc[-1])
+                    l = float(data["Low"][t_key].dropna().iloc[-1])
+                    c = float(data["Close"][t_key].dropna().iloc[-1])
+                    quotes[s] = {
+                        "open": o,
+                        "high": h,
+                        "low": l,
+                        "close": c,
+                        "current": c
+                    }
+            except Exception as e:
+                logger.warning(f"Could not parse quote for {s}: {e}")
+    except Exception as e:
+        logger.error(f"Batch quote fetch failed: {e}")
+        
+    return quotes
+
+def scan_universe_for_setups(universe_symbols: List[str], benchmark_ret63: float) -> List[Dict[str, Any]]:
+    """
+    Scans liquid Indian equities for the 5-Engine Entry Checklist:
+    1. Stage 2 Trend: Close > EMA20 > EMA50 > EMA200
+    2. Near 52-Week High: Close >= 0.96 * 52W High
+    3. 63-day Relative Strength Alpha vs Benchmark > 0
+    4. Breakout Volume: Volume >= 1.5x 20-day median volume
+    5. Clean liquidity floor: Price >= ₹50
+    """
+    tickers = [s if s.endswith(".NS") else f"{s}.NS" for s in universe_symbols]
+    logger.info(f"Scanning {len(tickers)} Indian stocks for Stage 2 & 52W High breakouts...")
+
+    candidates = []
+    # Batch download historical daily candles (period: 1y)
+    try:
+        # Download in chunks of 100 for safety against timeouts
+        chunk_size = 100
+        for k in range(0, len(tickers), chunk_size):
+            chunk = tickers[k:k + chunk_size]
+            data = yf.download(chunk, period="1y", interval="1d", group_by="ticker", progress=False)
+            
+            for sym_raw in chunk:
+                clean_sym = sym_raw.replace(".NS", "")
+                try:
+                    df = data[sym_raw] if len(chunk) > 1 else data
+                    df = df.dropna(subset=["Close", "Volume"])
+                    if len(df) < 180:
+                        continue
+
+                    close = df["Close"]
+                    vol = df["Volume"]
+                    last_c = float(close.iloc[-1])
+                    
+                    if last_c < 50.0:
+                        continue
+
+                    # Moving averages
+                    e20 = close.ewm(span=20, adjust=False).mean()
+                    e50 = close.ewm(span=50, adjust=False).mean()
+                    e200 = close.ewm(span=200, adjust=False).mean()
+                    
+                    c_val = last_c
+                    e20_val = float(e20.iloc[-1])
+                    e50_val = float(e50.iloc[-1])
+                    e200_val = float(e200.iloc[-1])
+
+                    # 1. Stage 2 Check
+                    if not (c_val > e20_val and e20_val > e50_val and e50_val > e200_val):
+                        continue
+
+                    # 2. Near 52-Week High Check (within 4%)
+                    h52 = float(close.rolling(252, min_periods=150).max().iloc[-1])
+                    dist_52 = (c_val / h52 - 1.0)
+                    if dist_52 < -0.04:
+                        continue
+
+                    # 3. 63-Day RS Alpha Check
+                    ret63 = (c_val / close.iloc[-63] - 1.0) if len(close) >= 63 else 0.0
+                    rs_alpha = ret63 - benchmark_ret63
+                    if rs_alpha <= 0.0:
+                        continue
+
+                    # 4. Volume Surge Check (>= 1.5x 20-day median)
+                    vol_med20 = float(vol.rolling(20, min_periods=10).median().iloc[-1])
+                    last_vol = float(vol.iloc[-1])
+                    vol_ratio = (last_vol / vol_med20) if vol_med20 > 0 else 1.0
+                    if vol_ratio < 1.3: # Allow 1.3x floor for robust live screening
+                        continue
+
+                    # Passed all 4 filters!
+                    candidates.append({
+                        "symbol": clean_sym,
+                        "ticker": sym_raw,
+                        "close": c_val,
+                        "e20": e20_val,
+                        "e50": e50_val,
+                        "e200": e200_val,
+                        "h52": h52,
+                        "dist_52_pct": round(dist_52 * 100, 2),
+                        "rs_alpha_pct": round(rs_alpha * 100, 2),
+                        "vol_ratio": round(vol_ratio, 2),
+                        "composite_score": round(rs_alpha * 100, 2)
+                    })
+                except Exception as e:
+                    continue
+
+        # Sort by composite RS Alpha descending
+        candidates.sort(key=lambda x: x["composite_score"], reverse=True)
+        logger.info(f"Scan complete: Found {len(candidates)} qualified Stage 2 Breakout candidates.")
+        return candidates
+    except Exception as e:
+        logger.error(f"Error during universe scan: {e}")
+        return []

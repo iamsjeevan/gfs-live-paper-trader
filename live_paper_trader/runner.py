@@ -1,16 +1,17 @@
 """
 live_paper_trader.runner
 ========================
-Main CLI orchestrator running the 4 parallel paper trading portfolios:
-1. `india_broad`: All Indian stocks > ₹100 Cr Market Cap
-2. `india_liquid`: Nifty 500 Liquid subset
-3. `usa_broad`: INDmoney / Tickertape tradeable US equities
-4. `usa_liquid`: S&P 500 Mega-liquid US equities
+Main CLI orchestrator for forward-testing Indian Equities:
+1. Hourly Intraday GTT Circuit Guard Check (--mode intraday)
+2. Daily End-of-Day Scan, Stop Evaluation & Rebalance (--mode eod)
+3. Smart Automatic Mode based on IST Market Hours (--mode auto)
+4. Status Inspection (--mode status)
 """
 
 import argparse
 import sys
 import logging
+from datetime import datetime, timedelta
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,60 +27,74 @@ logging.basicConfig(
 
 logger = logging.getLogger("live_paper_trader.runner")
 
-ALL_PORTFOLIOS = ["india_broad", "india_liquid", "usa_broad", "usa_liquid"]
-
 def main():
-    parser = argparse.ArgumentParser(description="GFS 1-Year Live Dual-Universe Paper Trading Runner")
+    parser = argparse.ArgumentParser(description="Autonomous Indian Equities Swing Forward-Test Runner")
     parser.add_argument(
-        "--portfolio",
-        choices=["all", "india_broad", "india_liquid", "usa_broad", "usa_liquid"],
-        default="all",
-        help="Specific portfolio to run (default: all)"
+        "--mode",
+        choices=["auto", "intraday", "eod", "status", "reset"],
+        default="auto",
+        help="Execution mode: auto (smart IST scheduler), intraday, eod, status, or reset"
     )
-    parser.add_argument(
-        "--market",
-        choices=["all", "india", "usa"],
-        default=None,
-        help="Convenience filter by market (runs both broad & liquid for that market)"
-    )
-    parser.add_argument(
-        "--force-monthly-report",
-        action="store_true",
-        help="Force generation and dispatch of monthly performance email report"
-    )
-    parser.add_argument(
-        "--init-only",
-        action="store_true",
-        help="Only initialize paper trading state files without running daily scan"
-    )
-
     args = parser.parse_args()
 
-    if args.market == "india":
-        targets = ["india_broad", "india_liquid"]
-    elif args.market == "usa":
-        targets = ["usa_broad", "usa_liquid"]
-    elif args.portfolio == "all":
-        targets = ALL_PORTFOLIOS
-    else:
-        targets = [args.portfolio]
+    engine = PaperTradingEngine()
 
-    print("\n" + "="*80)
-    print(f"🚀 RUNNING GFS 1-YEAR FORWARD TEST SUITE FOR: {', '.join(targets)}")
-    print("="*80)
+    if args.mode == "reset":
+        logger.warning("Resetting forward-test state to initial capital...")
+        if engine.STATE_FILE.exists():
+            engine.STATE_FILE.unlink()
+        engine = PaperTradingEngine()
+        engine.generate_dashboard_html()
+        logger.info("Portfolio successfully reset.")
+        return
 
-    for p_id in targets:
-        try:
-            logger.info(f"Starting Paper Trading Engine for [{p_id}]...")
-            engine = PaperTradingEngine(portfolio_id=p_id)
-            
-            if args.init_only:
-                logger.info(f"State initialized for [{p_id}].")
-                continue
+    if args.mode == "auto":
+        # Smart IST market clock
+        now_utc = datetime.utcnow()
+        now_ist = now_utc + timedelta(hours=5, minutes=30)
+        weekday = now_ist.weekday() # 0 = Monday, 6 = Sunday
+        hour = now_ist.hour
+        minute = now_ist.minute
+        time_minutes = hour * 60 + minute
 
-            engine.run_daily_cycle(force_monthly_report=args.force_monthly_report)
-        except Exception as e:
-            logger.error(f"Error executing cycle for [{p_id}]: {e}", exc_info=True)
+        logger.info(f"Clock Check: IST Time = {now_ist.strftime('%Y-%m-%d %H:%M:%S (%A)')}")
+
+        # Weekend Check: Saturday (5) & Sunday (6)
+        if weekday >= 5:
+            logger.info("Weekend detected. Markets are closed. Skipping execution.")
+            engine.generate_dashboard_html()
+            return
+
+        # 9:15 AM IST = 555 min, 3:30 PM IST = 930 min
+        if time_minutes >= 930 and time_minutes <= 1140: # 3:30 PM to 7:00 PM IST
+            logger.info("Market close window detected. Running End-of-Day (EOD) screening & rebalance.")
+            engine.run_eod_cycle()
+        elif time_minutes >= 555 and time_minutes < 930: # 9:15 AM to 3:30 PM IST
+            logger.info("Market hours active. Running hourly Intraday -12% GTT Circuit Guard check.")
+            engine.run_intraday_cycle()
+        else:
+            logger.info("Night / Off-market hours. Skipping execution.")
+            engine.generate_dashboard_html()
+            return
+
+    elif args.mode == "intraday":
+        engine.run_intraday_cycle()
+    elif args.mode == "eod":
+        engine.run_eod_cycle()
+    elif args.mode == "status":
+        nav = engine.calculate_total_equity()
+        print("\n" + "=" * 70)
+        print(f"📊 LIVE PORTFOLIO STATUS ({engine.state.get('last_updated', 'N/A')})")
+        print("=" * 70)
+        print(f"Current Net Equity (NAV) : ₹ {nav:,.2f}")
+        print(f"Cash Balance             : ₹ {engine.state.get('cash', 0.0):,.2f}")
+        print(f"Borrowed MTF Debt        : ₹ {engine.state.get('borrowed_debt', 0.0):,.2f}")
+        print(f"Total Margin Interest    : ₹ {engine.state.get('total_interest_paid', 0.0):,.2f}")
+        print(f"Market Regime            : {engine.state.get('current_regime', 'BULL')}")
+        print(f"Open Positions Count     : {len(engine.state.get('positions', {}))}")
+        print(f"Closed Trades Count      : {len(engine.trades)}")
+        print("=" * 70 + "\n")
+        engine.generate_dashboard_html()
 
 if __name__ == "__main__":
     main()

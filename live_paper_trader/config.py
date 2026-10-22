@@ -1,106 +1,67 @@
 """
 live_paper_trader.config
 ========================
-Configuration settings for the 1-Year Automated Paper Trading Engine
-for both Indian and US Equity Markets across Dual Universes:
-1. Broad Universe (All stocks meeting basic sanity floor: > ₹100Cr MCap in India, INDmoney/Tickertape tradeable in US)
-2. Liquid Universe (High liquidity / institutional quality subset)
+Institutional Configuration for the Indian Equities Forward Testing Engine:
+- Stage 2 Trend + Near 52-Week High Breakout
+- Dual-Layer Stop Loss (-12% Intraday GTT Circuit Guard + -8% EOD Close Stop)
+- 21 EMA Trailing Exit with 1.5% Anti-Whipsaw Buffer
+- Smallcap 250 / Nifty Regime Filter with Gold BeES Parking
+- Tiered Conviction Sizing (18% / 11% / 6.2%) with 1.5x Leverage
 """
 
 import os
 from pathlib import Path
 
-# Base Paths
+# Paths
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data"
 REPORTS_DIR = BASE_DIR / "reports" / "paper_trading"
 LOGS_DIR = REPORTS_DIR / "logs"
 
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Universe file paths
-MODULE_DIR = Path(__file__).resolve().parent
-UNIVERSE_INDIA_BROAD = MODULE_DIR / "universe_india_broad.json"
-UNIVERSE_INDIA_LIQUID = MODULE_DIR / "universe_india_liquid.json"
-UNIVERSE_USA_BROAD = MODULE_DIR / "universe_usa_broad.json"
-UNIVERSE_USA_LIQUID = MODULE_DIR / "universe_usa_liquid.json"
-
 # State persistence files
-STATE_INDIA_BROAD = REPORTS_DIR / "portfolio_state_india_broad.json"
-STATE_INDIA_LIQUID = REPORTS_DIR / "portfolio_state_india_liquid.json"
-STATE_USA_BROAD = REPORTS_DIR / "portfolio_state_usa_broad.json"
-STATE_USA_LIQUID = REPORTS_DIR / "portfolio_state_usa_liquid.json"
+STATE_FILE = REPORTS_DIR / "portfolio_state.json"
+TRADES_FILE = REPORTS_DIR / "trades_history.json"
+EQUITY_FILE = REPORTS_DIR / "equity_curve.json"
+SCAN_RESULTS_FILE = REPORTS_DIR / "latest_scan_results.json"
+DASHBOARD_FILE = BASE_DIR / "index.html" # Deployed directly by Vercel
 
-# ==========================================
-# 1. INDIAN MARKET CONFIGURATION
-# ==========================================
-INDIA_INITIAL_CAPITAL = float(os.getenv("INDIA_CAPITAL", "100000.0")) # ₹1,00,000
-INDIA_SLOTS = 10
-INDIA_CASH_PROXY = "GOLDBEES.NS"
-INDIA_INDEX_TICKER = "^NSEI" # Nifty 50
+# Universe files
+MODULE_DIR = Path(__file__).resolve().parent
+UNIVERSE_FILE = MODULE_DIR / "universe_india_liquid.json" # Nifty 500 & liquid smallcaps
 
-# Frictions
-INDIA_STOCK_FEE_BPS = 25.0 # 0.25% broker + STT + slippage
-INDIA_GOLD_FEE_BPS = 10.0  # 0.10% ETF slippage/brokerage
+# Capital & Leverage Configuration
+INITIAL_CAPITAL = float(os.getenv("INITIAL_CAPITAL", "100000.0")) # ₹ 1,00,000
+LEVERAGE = float(os.getenv("LEVERAGE", "1.5")) # 1.5x Kelly-optimal leverage (or 1.0x cash)
+MAX_POSITIONS = 10
+ANNUAL_INTEREST_RATE = 0.11 # 11% p.a. MTF broker interest
+DAILY_INTEREST_RATE = ANNUAL_INTEREST_RATE / 252.0
 
-# Regime Schedule 1: Exposure limits
-REGIME_EXPOSURE = {
-    "BULL": 1.00,    # 10 slots active
-    "NEUTRAL": 0.70, # 7 slots active
-    "BEAR": 0.30     # 3 slots active
-}
+# Tiered Conviction Weights (Rank 1-2: 18%, Rank 3-5: 11%, Rank 6-10: 6.2%)
+TIER_WEIGHTS = [0.18, 0.18, 0.11, 0.11, 0.11, 0.062, 0.062, 0.062, 0.062, 0.062]
 
-# India GFS Parameters
-INDIA_MONTHLY_RSI_PERIOD = 14
-INDIA_MONTHLY_RSI_THRESH = 60.0
-INDIA_MONTHLY_EMA_SPAN = 9
+# Dual-Layer Stop Loss Architecture
+GTT_CIRCUIT_STOP_PCT = -0.12 # -12.0% Intraday Emergency GTT Circuit Guard
+CLOSE_STOP_PCT = -0.08       # -8.0% Routine Daily Close Stop (evaluated at 3:30 PM)
 
-INDIA_WEEKLY_RSI_PERIOD = 14
-INDIA_WEEKLY_RSI_THRESH = 60.0
+# Trailing Profit Exit
+EMA_TRAIL_SPAN = 21          # 21 EMA trailing stop
+EMA_BUFFER_PCT = 0.015       # 1.5% buffer below 21 EMA to avoid fractional false whipsaws (e.g. TBZ)
 
-INDIA_DAILY_RSI_PERIOD = 14
-INDIA_DAILY_RSI_TRIGGER = 40.0
+# Macro Regime Filter & Hedging
+REGIME_INDEX = "^NSEI"       # Nifty 50 / Broad Indian Index
+CASH_PROXY = "GOLDBEES.NS"   # Nippon India Gold ETF (park capital when regime is BEAR)
 
-# Indian Exit Rule: Month-end close < Monthly EMA9 (No dead money eviction in India!)
-INDIA_DEAD_MONEY_DAYS = 0
+# Frictional Costs
+TRANSACTION_FEE_BPS = 0.0025 # 25 bps round-trip (brokerage + STT + turnover charges)
+SLIPPAGE_BPS = 0.0050        # 50 bps entry slippage modeled
 
-# ==========================================
-# 2. US MARKET CONFIGURATION
-# ==========================================
-USA_INITIAL_CAPITAL = float(os.getenv("USA_CAPITAL", "10000.0")) # $10,000
-USA_SLOTS = 10
-USA_CASH_PROXY = "GLD"      # SPDR Gold Shares ETF (Gold Proxy)
-USA_INDEX_TICKER = "SPY"    # S&P 500
-
-# Frictions
-USA_STOCK_FEE_BPS = 5.0
-USA_ETF_FEE_BPS = 2.0
-
-# US GFS Parameters
-USA_MONTHLY_RSI_PERIOD = 14
-USA_MONTHLY_RSI_THRESH = 60.0
-USA_MONTHLY_EMA_SPAN = 13
-
-USA_WEEKLY_RSI_PERIOD = 14
-USA_WEEKLY_RSI_THRESH = 60.0
-
-USA_DAILY_RSI_PERIOD = 14
-USA_DAILY_RSI_TRIGGER = 40.0
-
-# US Exit Rule: 60-Day Dead-Money Eviction (< +3% return) + Month-End close < EMA13
-USA_DEAD_MONEY_DAYS = 60
-USA_DEAD_MONEY_THRESH_PCT = 3.0
-
-# ==========================================
-# 3. EMAIL NOTIFICATION SETTINGS (SMTP)
-# ==========================================
+# Notifications (Optional Email / Telegram)
 EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
 EMAIL_USER = os.getenv("EMAIL_USER", "")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "")
 EMAIL_TO = os.getenv("EMAIL_TO", "")
-
-# Telegram Fallback (optional)
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")

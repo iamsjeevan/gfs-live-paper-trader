@@ -1,18 +1,33 @@
-name: Autonomous GFS 1-Year Paper Trading Engine
+name: Autonomous Indian Smallcap Swing Forward-Test Engine
 
 on:
   schedule:
-    # 1. India Market Close: Mon-Fri at 11:45 UTC (5:15 PM IST)
-    - cron: '45 11 * * 1-5'
-    # 2. US Market Close: Mon-Fri at 21:45 UTC (5:45 PM EST)
-    - cron: '45 21 * * 1-5'
-  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+    # 1. Hourly Intraday GTT Circuit Guard (-12% check): Mon-Fri at 9:30, 10:30, 11:30, 12:30, 13:30, 14:30, 15:30 IST
+    # (04:00, 05:00, 06:00, 07:00, 08:00, 09:00, 10:00 UTC)
+    - cron: '0 4,5,6,7,8,9,10 * * 1-5'
+
+    # 2. Daily End-of-Day (EOD) Scan & Rebalance: Mon-Fri at 4:00 PM IST (10:30 UTC)
+    - cron: '30 10 * * 1-5'
+
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Execution mode (auto, intraday, eod, status, reset)'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - intraday
+          - eod
+          - status
+          - reset
 
 permissions:
-  contents: write # Allows committing updated portfolio state back to repository
+  contents: write # Allows committing updated portfolio state & index.html back to repo for Vercel
 
 jobs:
-  run-paper-trading:
+  run-forward-test:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -31,28 +46,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install yfinance pandas numpy requests
 
-      - name: Run GFS Paper Trading Daily Cycle
+      - name: Run Swing Momentum Engine Cycle
         env:
-          EMAIL_HOST: ${{ secrets.EMAIL_HOST || 'smtp.gmail.com' }}
-          EMAIL_PORT: ${{ secrets.EMAIL_PORT || 587 }}
-          EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          INDIA_CAPITAL: ${{ secrets.INDIA_CAPITAL || 100000.0 }}
-          USA_CAPITAL: ${{ secrets.USA_CAPITAL || 10000.0 }}
+          INITIAL_CAPITAL: ${{ secrets.INITIAL_CAPITAL || 100000.0 }}
+          LEVERAGE: ${{ secrets.LEVERAGE || 1.5 }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python -m live_paper_trader.runner --portfolio all
+          MODE="${{ github.event.inputs.mode || 'auto' }}"
+          echo "Executing mode: $MODE"
+          python -m live_paper_trader.runner --mode "$MODE"
 
-      - name: Commit and Push Portfolio State
+      - name: Commit and Push Portfolio State & Vercel Dashboard
         run: |
-          git config --global user.name "GFS Paper Trading Bot"
-          git config --global user.email "bot@gfs-paper-trading.local"
-          git add reports/paper_trading/
+          git config --global user.name "Autonomous Swing Trading Bot"
+          git config --global user.email "bot@swing-momentum.local"
+          git add reports/paper_trading/ index.html
           if git diff --staged --quiet; then
             echo "No state changes to commit."
           else
-            git commit -m "chore(paper-trading): update daily portfolio state and equity curve [skip ci]"
+            git commit -m "chore(paper-trading): update portfolio state and live dashboard [skip ci]"
             git push
           fi
