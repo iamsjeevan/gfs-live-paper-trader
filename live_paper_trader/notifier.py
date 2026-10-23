@@ -347,7 +347,7 @@ class PaperTradingNotifier:
             <div style="padding: 20px; background-color: #f8fafc; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">
                 <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px;">
                     <strong>Market Regime:</strong> <span style="color: {'#2e7d32' if regime == 'BULL' else '#c62828'}; font-weight: bold;">{regime}</span>
-                    <span style="color: #64748b; font-size: 12px; margin-left: 10px;">(Nifty 50: ₹ {nifty_close:,.1f} | {'Long Active' if regime == 'BULL' else 'Capital Hedged in GOLDBEES'})</span>
+                    <span style="color: #64748b; font-size: 12px; margin-left: 10px;">(Smallcap 250: ₹ {nifty_close:,.1f} | {'Long Active' if regime == 'BULL' else 'Capital Hedged in GOLDBEES'})</span>
                 </div>
 
                 <h3 style="font-size: 14px; text-transform: uppercase; color: #475569; margin-bottom: 10px;">Portfolio Leaderboard (Started at ₹ 1,00,000 each)</h3>

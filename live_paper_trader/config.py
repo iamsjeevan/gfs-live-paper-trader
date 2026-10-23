@@ -129,7 +129,7 @@ EMA_TRAIL_SPAN = 21          # 21 EMA trailing stop
 EMA_BUFFER_PCT = 0.015       # 1.5% buffer below 21 EMA to avoid fractional false whipsaws (e.g. TBZ)
 
 # Macro Regime Filter & Hedging
-REGIME_INDEX = "^NSEI"       # Nifty 50 / Broad Indian Index
+REGIME_INDEX = "NIFTYSMLCAP250.NS"  # NIFTY Smallcap 250 Index (Official NSE Smallcap Benchmark)
 CASH_PROXY = "GOLDBEES.NS"   # Nippon India Gold ETF (park capital when regime is BEAR)
 
 # Frictional Costs

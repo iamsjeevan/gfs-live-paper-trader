@@ -717,7 +717,7 @@ class PaperTradingEngine:
       <div class="kpi-card">
         <div class="kpi-lbl">Market Regime Filter</div>
         <div class="kpi-val" id="kpiRegime">BEAR</div>
-        <div class="kpi-sub" id="kpiRegimeSub">Nifty 50 < 200 EMA (Capital in Gold)</div>
+        <div class="kpi-sub" id="kpiRegimeSub">Smallcap 250 < 200 EMA (Capital in Gold)</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-lbl">Active Positions & WR</div>
@@ -839,7 +839,7 @@ class PaperTradingEngine:
       const regEl = document.getElementById("kpiRegime");
       regEl.innerText = p.regime;
       regEl.className = "kpi-val " + (p.regime === "BULL" ? "green" : "red");
-      document.getElementById("kpiRegimeSub").innerText = p.regime === "BULL" ? "Nifty 50 > 200 EMA (Equity Active)" : "Nifty 50 < 200 EMA (Capital in Gold)";
+      document.getElementById("kpiRegimeSub").innerText = p.regime === "BULL" ? "Smallcap 250 > 200 EMA (Equity Active)" : "Smallcap 250 < 200 EMA (Capital in Gold)";
 
       document.getElementById("kpiPosCount").innerHTML = `${{p.positions_count}} / ${{p.slots}} <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">| ${{p.win_rate.toFixed(1)}}% WR</span>`;
       document.getElementById("kpiTradesCount").innerText = p.trades_count + " Closed Trades";

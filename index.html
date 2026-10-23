@@ -71,7 +71,7 @@
         <div class="subtext">Stage 2 Momentum + Dual-Stop Architecture • 7-Slot vs 10-Slot Matrix (1.0x Cash, 1.5x MTF, 2.0x MTF)</div>
       </div>
       <div style="text-align: right;">
-        <div style="font-size: 13px; font-weight: 600; color: var(--accent);">Last Update: 2026-10-22 15:26:43 IST</div>
+        <div style="font-size: 13px; font-weight: 600; color: var(--accent);">Last Update: 2026-10-23 14:20:14 IST</div>
         <div style="font-size: 11px; color: var(--text-muted);">Auto-deployed via Vercel & GitHub Actions</div>
       </div>
     </div>
@@ -106,7 +106,7 @@
       <div class="kpi-card">
         <div class="kpi-lbl">Market Regime Filter</div>
         <div class="kpi-val" id="kpiRegime">BEAR</div>
-        <div class="kpi-sub" id="kpiRegimeSub">Nifty 50 < 200 EMA (Capital in Gold)</div>
+        <div class="kpi-sub" id="kpiRegimeSub">Smallcap 250 < 200 EMA (Capital in Gold)</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-lbl">Active Positions & WR</div>
@@ -228,7 +228,7 @@
       const regEl = document.getElementById("kpiRegime");
       regEl.innerText = p.regime;
       regEl.className = "kpi-val " + (p.regime === "BULL" ? "green" : "red");
-      document.getElementById("kpiRegimeSub").innerText = p.regime === "BULL" ? "Nifty 50 > 200 EMA (Equity Active)" : "Nifty 50 < 200 EMA (Capital in Gold)";
+      document.getElementById("kpiRegimeSub").innerText = p.regime === "BULL" ? "Smallcap 250 > 200 EMA (Equity Active)" : "Smallcap 250 < 200 EMA (Capital in Gold)";
 
       document.getElementById("kpiPosCount").innerHTML = `${p.positions_count} / ${p.slots} <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">| ${p.win_rate.toFixed(1)}% WR</span>`;
       document.getElementById("kpiTradesCount").innerText = p.trades_count + " Closed Trades";
