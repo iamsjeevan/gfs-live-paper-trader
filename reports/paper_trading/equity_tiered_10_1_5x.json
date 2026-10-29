@@ -14,5 +14,13 @@
     "stock_value": 0,
     "gold_value": 99443.37,
     "debt": 0.0
+  },
+  {
+    "date": "2026-10-29",
+    "equity": 98901.88,
+    "cash": 103.75,
+    "stock_value": 0,
+    "gold_value": 98798.13,
+    "debt": 0.0
   }
 ]
